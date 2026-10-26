@@ -1,0 +1,39 @@
+# OmniInspect: AI Development Environment
+
+# Bytecode & Caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environments
+venv/
+.env
+.env.local
+.env.*.local
+*.env
+
+# Build & OS
+dist/
+build/
+*.egg-info/
+.DS_Store
+Thumbs.db
+
+# Frontend (Next.js / Node)
+node_modules/
+.next/
+out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Model checkpoints & large local datasets
+checkpoints/
+*.pt
+*.safetensors
+*.bin
+*.onnx
+data/raw/

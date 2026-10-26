@@ -1,0 +1,25 @@
+# Core dependencies for OmniInspect
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+pydantic>=2.9.0
+python-dotenv>=1.0.1
+httpx>=0.27.0
+websockets>=13.1
+
+# Computer Vision & Numerical Geometry
+numpy>=1.26.0
+opencv-python-headless>=4.10.0
+shapely>=2.0.6
+scipy>=1.14.0
+Pillow>=10.4.0
+
+# LLM & Agent SDKs
+openai>=1.52.0
+anthropic>=0.37.0
+
+# Cloud Inference & Sandboxing
+modal>=0.66.0
+
+# Testing & Evals
+pytest>=8.3.0
+pytest-asyncio>=0.24.0
