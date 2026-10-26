@@ -93,13 +93,10 @@ cp .env.example .env
 
 ---
 
-## 🏆 Hackathon Tracks & Target Prizes
-- **Primary Track:** Indie Developer (1st Place $150,000)
-- **Problem Statement:** Push the Frontier (Hardware, Robotics, and Manufacturing)
-- **Target Bonuses:**
-  - 🥇 *Best Build on Meta Open Weight Models ($10,000)* — Muse Spark Open deployed on Modal/Baseten.
-  - 🥈 *Best Agentic Use-Case ($5,000)* — Autonomous closed-loop safety interlock and FastMCP tool verification.
-  - 🥉 *Most Viral Project ($20,000)* — Real-world interactive visual telemetry demo.
+## 🎯 Hackathon Problem Statement & Track
+- **Track:** Indie Developer
+- **Problem Statement:** Push the Frontier (Hardware, Robotics, and Real-World Systems)
+- **Meta AI Alignment:** Leverages Meta's open-weight models (Muse Spark Open, Muse Glimmer) and perception models (SAM 3.1) alongside deterministic graph netlist validation for cyber-physical systems.
 
 ---
 
