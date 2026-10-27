@@ -94,19 +94,22 @@ class MetaModelClient:
                     f"Auditing Component: {ref_des}\n"
                     f"Package/Value: {expected_part}\n"
                     f"Expected Pin-to-Net Connections: {json.dumps(expected_nets, indent=2)}\n\n"
-                    "Analyze the provided optical crop. Check for:\n"
+                    "Analyze the provided optical crop or component context. Check for:\n"
                     "1. Solder bridges or clearance violations between adjacent pins.\n"
                     "2. Pin-1 orientation or polarity index notch.\n"
                     "3. Component presence and mechanical seating."
                 )
-            },
-            {
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:image/jpeg;base64,{roi_image_base64}"
-                }
             }
         ]
+
+        # Attach image payload only if non-empty base64 string provided
+        if roi_image_base64 and len(roi_image_base64.strip()) > 10:
+            user_content.append({
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:image/jpeg;base64,{roi_image_base64.strip()}"
+                }
+            })
 
         # In offline/mock mode if no live key is set, returns deterministic synthetic inspection
         if not self.config.api_key or self.config.api_key == "DUMMY_KEY_FOR_LOCAL_MOCK":
