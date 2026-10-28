@@ -25,8 +25,8 @@ class TestOmniInspectPlatform(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         html = response.text
         self.assertIn("OmniInspect AI", html)
-        self.assertIn("LAYER 1: OPTICAL RETICLE", html)
-        self.assertIn("LAYER 2: 100kSPS SIGNAL ML", html)
+        self.assertIn("LAYER 1: OPTICAL", html)
+        self.assertIn("CAD DIGITAL TWIN", html)
         self.assertIn("scopeCanvas2", html)
         self.assertIn("scopeCanvas3", html)
         self.assertIn("FAILSAFE REVIEW TIMER", html)
