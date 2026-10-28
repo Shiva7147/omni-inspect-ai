@@ -243,13 +243,24 @@ async def execute_audit(req: AuditRequest):
         safe = True
         verdict = "AUTHORIZE_ENERGIZATION"
 
+    # Load real sample image if no base64 provided
+    img_b64 = req.image_base64 or ""
+    if not img_b64 and (samples_dir / "board_inspection_macro.jpg").exists():
+        import base64
+        with open(samples_dir / "board_inspection_macro.jpg", "rb") as f:
+            img_b64 = base64.b64encode(f.read()).decode("utf-8")
+
     # Query Meta Model client
     meta_response = meta_client.inspect_component_roi(
-        roi_image_base64=req.image_base64 or "",
+        roi_image_base64=img_b64,
         ref_des=channel["id"],
         expected_part=channel["package"],
         expected_nets={"48": "+3V3_MCU", "49": "GND_ISO"}
     )
+
+    # Use live inference analysis if returned from Meta API
+    live_text = meta_response.get("analysis")
+    final_analysis = live_text if (live_text and len(live_text) > 30 and meta_response.get("status") == "LIVE_SUCCESS") else analysis
 
     return {
         "channel": channel,
@@ -259,7 +270,7 @@ async def execute_audit(req: AuditRequest):
         "meta_model": {
             "model": meta_response.get("model_used", "meta-llama/Llama-3.2-11B-Vision-Instruct"),
             "segmenter": "Meta SAM 2.1",
-            "analysis": analysis,
+            "analysis": final_analysis,
             "raw_tool_response": meta_response.get("raw", {})
         }
     }

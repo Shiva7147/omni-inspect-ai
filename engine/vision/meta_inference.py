@@ -140,7 +140,8 @@ class MetaModelClient:
                     {"role": "user", "content": user_content}
                 ],
                 tools=tools_schema if tools_schema else None,
-                temperature=self.config.temperature
+                temperature=self.config.temperature,
+                max_tokens=2048
             )
 
             message = response.choices[0].message
