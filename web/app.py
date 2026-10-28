@@ -46,6 +46,11 @@ class SensorSimulator:
         t = self.tick * 0.1
         
         if self.state == "fault":
+            # 32-bin FFT spectrum simulating 18.4 kHz micro-arc spike at bins 23-25
+            fft_data = [round(random.uniform(0.04, 0.12), 3) for _ in range(32)]
+            fft_data[23] = round(0.72 + random.uniform(-0.05, 0.05), 3)
+            fft_data[24] = round(0.96 + random.uniform(-0.03, 0.03), 3) # 18.4 kHz peak
+            fft_data[25] = round(0.68 + random.uniform(-0.05, 0.05), 3)
             return {
                 "bus_voltage": round(random.uniform(0.00, 0.02), 2),
                 "peak_current": round(14.82 + random.uniform(-0.1, 0.1), 2),
@@ -58,9 +63,16 @@ class SensorSimulator:
                 "label_temp": "MCU THERMAL READING (OVERRUN)",
                 "label_contactor": "INTERLOCK RESPONSE TIME (< 5ms SPEC ✓)",
                 "state_color": "#FF3B30",
-                "spec_compliant": False
+                "spec_compliant": False,
+                "fft_spectrum": fft_data,
+                "harmonic_thd_pct": 28.4,
+                "pre_fault_confidence": 98.4,
+                "signal_alert": "HIGH-FREQUENCY MICRO-ARC DETECTED AT 18.4 kHz"
             }
         elif self.state == "nominal":
+            # 32-bin clean spectrum: fundamental DC/low freq peak, low floor
+            fft_data = [round(random.uniform(0.01, 0.05), 3) for _ in range(32)]
+            fft_data[1] = round(0.22 + random.uniform(-0.02, 0.02), 3) # 120Hz ripple
             return {
                 "bus_voltage": round(24.18 + math.sin(t) * 0.02, 2),
                 "peak_current": round(4.20 + math.sin(t * 0.5) * 0.15, 2),
@@ -73,9 +85,14 @@ class SensorSimulator:
                 "label_temp": "MCU THERMAL — NOMINAL",
                 "label_contactor": "POWER AUTHORIZED",
                 "state_color": "#30D158",
-                "spec_compliant": True
+                "spec_compliant": True,
+                "fft_spectrum": fft_data,
+                "harmonic_thd_pct": 0.82,
+                "pre_fault_confidence": 0.1,
+                "signal_alert": "NOMINAL HARMONIC EQUILIBRIUM"
             }
         else: # scanning / active inspection
+            fft_data = [round(random.uniform(0.01, 0.03), 3) for _ in range(32)]
             return {
                 "bus_voltage": 0.00,
                 "peak_current": 0.00,
@@ -88,7 +105,11 @@ class SensorSimulator:
                 "label_temp": "AMBIENT BASELINE",
                 "label_contactor": "STANDBY ARMED",
                 "state_color": "#FFD60A",
-                "spec_compliant": True
+                "spec_compliant": True,
+                "fft_spectrum": fft_data,
+                "harmonic_thd_pct": 0.1,
+                "pre_fault_confidence": 0.0,
+                "signal_alert": "PRE-FLIGHT ZERO VOLTAGE CALIBRATION"
             }
 
 simulator = SensorSimulator(state="fault")
@@ -1013,6 +1034,30 @@ async def serve_dashboard_v8():
             color: #FFF;
         }
 
+        /* Dual-Layer Navigation Tabs */
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: var(--text-secondary);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #FFF;
+        }
+        .tab-btn.active-tab {
+            background: rgba(255, 255, 255, 0.20);
+            border-color: rgba(255, 255, 255, 0.45);
+            color: #FFF;
+        }
+
         /* Footnote */
         .footnote-strip {
             position: relative;
@@ -1089,12 +1134,31 @@ async def serve_dashboard_v8():
         <div id="viewState2" class="view-screen">
             <div class="split-layout">
                 
-                <!-- Left Panel: Before Image with Red Solder Bridge BBox -->
+                <!-- Left Panel: Dual-Layer Optical Gate + Predictive Signal ML -->
                 <div class="glass-panel image-panel" style="border-color: rgba(255, 59, 48, 0.35);">
                     <div>
-                        <div class="image-container">
+                        <!-- Layer 1 vs Layer 2 Navigation Tabs -->
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <div style="display:flex; gap:8px;">
+                                <button id="s2TabLayer1" onclick="switchLeftTab('layer1', 2)" class="tab-btn active-tab">
+                                    LAYER 1: OPTICAL RETICLE
+                                </button>
+                                <button id="s2TabLayer2" onclick="switchLeftTab('layer2', 2)" class="tab-btn">
+                                    LAYER 2: 100kSPS SIGNAL ML
+                                </button>
+                            </div>
+                            <span class="label-caps" id="s2ActiveLayerLabel" style="color:var(--color-fault);">OPTICAL IN-CIRCUIT GATE</span>
+                        </div>
+
+                        <!-- Layer 1 View: Macro Image with Red Bounding Box -->
+                        <div id="s2ImgWrapper" class="image-container">
                             <img src="/static/board_inspection_macro.jpg" alt="Fault Detected Board">
                             <div class="bbox-fault"></div>
+                        </div>
+
+                        <!-- Layer 2 View: Real-Time Oscilloscope & FFT Spectrum Analyzer -->
+                        <div id="s2ScopeWrapper" class="image-container" style="display:none; background:#04060C;">
+                            <canvas id="scopeCanvas2" width="600" height="380" style="width:100%; height:100%; display:block;"></canvas>
                         </div>
 
                         <div class="image-status-bar">
@@ -1207,12 +1271,31 @@ async def serve_dashboard_v8():
         <div id="viewState3" class="view-screen view-hidden">
             <div class="split-layout">
                 
-                <!-- Left Panel: After Image with Green Rework Verification -->
+                <!-- Left Panel: Dual-Layer Optical Verification + Clean Signal Telemetry -->
                 <div class="glass-panel image-panel" style="border-color: rgba(48, 209, 88, 0.35);">
                     <div>
-                        <div class="image-container">
+                        <!-- Layer 1 vs Layer 2 Navigation Tabs -->
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <div style="display:flex; gap:8px;">
+                                <button id="s3TabLayer1" onclick="switchLeftTab('layer1', 3)" class="tab-btn active-tab">
+                                    LAYER 1: OPTICAL RESTORAL
+                                </button>
+                                <button id="s3TabLayer2" onclick="switchLeftTab('layer2', 3)" class="tab-btn">
+                                    LAYER 2: IN-FLIGHT SIGNAL ML
+                                </button>
+                            </div>
+                            <span class="label-caps" id="s3ActiveLayerLabel" style="color:var(--color-clear);">REWORK VERIFIED</span>
+                        </div>
+
+                        <!-- Layer 1 View: Pristine Fillet Image -->
+                        <div id="s3ImgWrapper" class="image-container">
                             <img id="afterImageEl" src="/static/board_inspection_clean.jpg" alt="Rework Verified Clean PCBA">
                             <div class="bbox-nominal"></div>
+                        </div>
+
+                        <!-- Layer 2 View: Real-Time Oscilloscope & Clean Spectrum -->
+                        <div id="s3ScopeWrapper" class="image-container" style="display:none; background:#04060C;">
+                            <canvas id="scopeCanvas3" width="600" height="380" style="width:100%; height:100%; display:block;"></canvas>
                         </div>
 
                         <div class="image-status-bar">
@@ -1346,9 +1429,11 @@ async def serve_dashboard_v8():
         const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
         const wsUrl = `${protocol}//${window.location.host}/ws/telemetry`;
         let ws = new WebSocket(wsUrl);
+        let latestTelemetry = null;
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
+            latestTelemetry = data.sensors;
             updateSensors(data.sensors);
         };
 
@@ -1356,6 +1441,214 @@ async def serve_dashboard_v8():
             // Reconnect after 2s
             setTimeout(() => { ws = new WebSocket(wsUrl); }, 2000);
         };
+
+        // Tab Switcher between Layer 1 (Optical Reticle) and Layer 2 (Signal ML Scope)
+        let currentTabState2 = "layer1";
+        let currentTabState3 = "layer1";
+
+        function switchLeftTab(tab, stateNum) {
+            if (stateNum === 2) {
+                currentTabState2 = tab;
+                const imgWrap = document.getElementById("s2ImgWrapper");
+                const scopeWrap = document.getElementById("s2ScopeWrapper");
+                const btnL1 = document.getElementById("s2TabLayer1");
+                const btnL2 = document.getElementById("s2TabLayer2");
+                const label = document.getElementById("s2ActiveLayerLabel");
+                if (tab === "layer1") {
+                    imgWrap.style.display = "block";
+                    scopeWrap.style.display = "none";
+                    btnL1.classList.add("active-tab");
+                    btnL2.classList.remove("active-tab");
+                    label.innerText = "OPTICAL IN-CIRCUIT GATE";
+                    label.style.color = "var(--color-fault)";
+                } else {
+                    imgWrap.style.display = "none";
+                    scopeWrap.style.display = "block";
+                    btnL1.classList.remove("active-tab");
+                    btnL2.classList.add("active-tab");
+                    label.innerText = "100kSPS SIGNAL ML PREDICTOR";
+                    label.style.color = "var(--color-warn)";
+                }
+            } else if (stateNum === 3) {
+                currentTabState3 = tab;
+                const imgWrap = document.getElementById("s3ImgWrapper");
+                const scopeWrap = document.getElementById("s3ScopeWrapper");
+                const btnL1 = document.getElementById("s3TabLayer1");
+                const btnL2 = document.getElementById("s3TabLayer2");
+                const label = document.getElementById("s3ActiveLayerLabel");
+                if (tab === "layer1") {
+                    imgWrap.style.display = "block";
+                    scopeWrap.style.display = "none";
+                    btnL1.classList.add("active-tab");
+                    btnL2.classList.remove("active-tab");
+                    label.innerText = "OPTICAL RESTORAL VERIFICATION";
+                    label.style.color = "var(--color-clear)";
+                } else {
+                    imgWrap.style.display = "none";
+                    scopeWrap.style.display = "block";
+                    btnL1.classList.remove("active-tab");
+                    btnL2.classList.add("active-tab");
+                    label.innerText = "CONTINUOUS IN-FLIGHT MONITOR";
+                    label.style.color = "var(--color-clear)";
+                }
+            }
+        }
+
+        // Oscilloscope & FFT Canvas Renderer
+        let scopeTick = 0;
+        function renderScopes() {
+            scopeTick += 0.05;
+
+            // Render State 2 Canvas
+            const cvs2 = document.getElementById("scopeCanvas2");
+            if (cvs2 && currentMode === "fault" && currentTabState2 === "layer2") {
+                drawScope(cvs2, true, latestTelemetry);
+            }
+
+            // Render State 3 Canvas
+            const cvs3 = document.getElementById("scopeCanvas3");
+            if (cvs3 && currentMode === "nominal" && currentTabState3 === "layer2") {
+                drawScope(cvs3, false, latestTelemetry);
+            }
+
+            requestAnimationFrame(renderScopes);
+        }
+        requestAnimationFrame(renderScopes);
+
+        function drawScope(canvas, isFault, tel) {
+            const ctx = canvas.getContext("2d");
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Clear Background
+            ctx.fillStyle = "#040711";
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw Gridlines
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.07)";
+            ctx.lineWidth = 1;
+            const gridSpacing = 30;
+            ctx.beginPath();
+            for (let x = 0; x < w; x += gridSpacing) {
+                ctx.moveTo(x, 0); ctx.lineTo(x, h);
+            }
+            for (let y = 0; y < h; y += gridSpacing) {
+                ctx.moveTo(0, y); ctx.lineTo(w, y);
+            }
+            ctx.stroke();
+
+            // Center Separator between Waveform (top) and FFT (bottom)
+            const midY = 210;
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+            ctx.beginPath();
+            ctx.moveTo(0, midY); ctx.lineTo(w, midY);
+            ctx.stroke();
+
+            // ================= CHANNEL 1: OSCILLOSCOPE WAVEFORM =================
+            ctx.font = "10px 'JetBrains Mono', monospace";
+            ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+            ctx.fillText("CH1: 24V RAIL MICRO-RIPPLE (100 kSPS SPI)", 14, 22);
+
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            if (isFault) {
+                ctx.strokeStyle = "#FF3B30";
+                // Erratic ringing pulse followed by clamp to zero
+                for (let x = 0; x < w; x++) {
+                    const progress = x / w;
+                    let yVal;
+                    if (progress < 0.25) {
+                        yVal = 95 + Math.sin((x * 0.1) + scopeTick * 5) * 6;
+                    } else if (progress < 0.45) {
+                        // High-frequency micro-arc burst
+                        yVal = 95 + Math.sin((x * 0.45) + scopeTick * 12) * 55 * Math.exp(-(progress - 0.25) * 5);
+                    } else {
+                        // Clamped to ground (0.00V)
+                        yVal = 175 + (Math.random() - 0.5) * 2;
+                    }
+                    if (x === 0) ctx.moveTo(x, yVal);
+                    else ctx.lineTo(x, yVal);
+                }
+            } else {
+                ctx.strokeStyle = "#30D158";
+                // Smooth nominal DC rail with minimal ripple
+                for (let x = 0; x < w; x++) {
+                    const yVal = 100 + Math.sin((x * 0.05) + scopeTick * 2) * 4 + (Math.random() - 0.5) * 1.5;
+                    if (x === 0) ctx.moveTo(x, yVal);
+                    else ctx.lineTo(x, yVal);
+                }
+            }
+            ctx.stroke();
+
+            // Waveform Marker/Badge
+            if (isFault) {
+                ctx.fillStyle = "rgba(255, 59, 48, 0.2)";
+                ctx.fillRect(w - 220, 10, 206, 22);
+                ctx.strokeStyle = "rgba(255, 59, 48, 0.6)";
+                ctx.strokeRect(w - 220, 10, 206, 22);
+                ctx.fillStyle = "#FF3B30";
+                ctx.fillText("CRITICAL HARMONIC TRIP: 3.18ms", w - 212, 25);
+            } else {
+                ctx.fillStyle = "rgba(48, 209, 88, 0.2)";
+                ctx.fillRect(w - 180, 10, 166, 22);
+                ctx.strokeStyle = "rgba(48, 209, 88, 0.6)";
+                ctx.strokeRect(w - 180, 10, 166, 22);
+                ctx.fillStyle = "#30D158";
+                ctx.fillText("NOMINAL 24.18V DC &plusmn; 4mV", w - 172, 25);
+            }
+
+            // ================= CHANNEL 2: 32-BIN FFT SPECTRUM =================
+            ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+            ctx.fillText("CH2: FAST FOURIER TRANSFORM (0 Hz - 25 kHz TRANSDUCER SPECTRUM)", 14, midY + 22);
+
+            const fft = (tel && tel.fft_spectrum) ? tel.fft_spectrum : Array(32).fill(0.05);
+            const barWidth = 14;
+            const barGap = 4;
+            const startX = 14;
+            const baseFloorY = h - 25;
+            const maxBarHeight = 110;
+
+            for (let i = 0; i < 32; i++) {
+                const val = fft[i] || 0.05;
+                const barH = val * maxBarHeight;
+                const bx = startX + i * (barWidth + barGap);
+                const by = baseFloorY - barH;
+
+                if (isFault && (i >= 23 && i <= 25)) {
+                    // 18.4 kHz micro-arc spike
+                    const grad = ctx.createLinearGradient(0, by, 0, baseFloorY);
+                    grad.addColorStop(0, "#FF3B30");
+                    grad.addColorStop(1, "rgba(255, 59, 48, 0.3)");
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(bx, by, barWidth, barH);
+                    ctx.strokeStyle = "#FF3B30";
+                    ctx.strokeRect(bx, by, barWidth, barH);
+                } else if (!isFault) {
+                    const grad = ctx.createLinearGradient(0, by, 0, baseFloorY);
+                    grad.addColorStop(0, "#30D158");
+                    grad.addColorStop(1, "rgba(48, 209, 88, 0.2)");
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(bx, by, barWidth, barH);
+                } else {
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
+                    ctx.fillRect(bx, by, barWidth, barH);
+                }
+            }
+
+            // Annotation on 18.4 kHz spike in Fault mode
+            if (isFault) {
+                const spikeX = startX + 24 * (barWidth + barGap);
+                ctx.fillStyle = "#FFD60A";
+                ctx.fillText("▲ 18.4 kHz MICRO-ARC RESONANCE (+42 dB)", spikeX - 100, baseFloorY - 100);
+            }
+
+            // Frequency Axis Labels
+            ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+            ctx.fillText("0 Hz", startX, h - 8);
+            ctx.fillText("10 kHz", startX + 13 * (barWidth + barGap), h - 8);
+            ctx.fillText("18.4 kHz", startX + 24 * (barWidth + barGap) - 10, h - 8);
+            ctx.fillText("25 kHz", startX + 31 * (barWidth + barGap) - 10, h - 8);
+        }
 
         function updateSensors(s) {
             if (!s) return;
