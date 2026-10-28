@@ -1,21 +1,25 @@
 """
-OmniInspect Enterprise SMT & Pre-Power Interlock Cockpit (v7.1.0).
-Zero-Hallucination CAD Netlist Alignment, Llama 3.2-11B-Vision & SAM 2.1 Inspection,
-Multi-Sensor Telemetry Fusion, and Pre-Power Hardware Safety Interlock Gate.
+OMNIINSPECT AI — DASHBOARD ENGINE v8.0
+Industrial Pre-Power Optical Inspection & Cyber-Physical Safety Gate.
+Three-State Machine Architecture, Glassmorphism Cockpit, Live WebSocket Telemetry Engine,
+and Designed Printable HTML RCA Incident Reports.
 """
 
 import os
 import sys
 import json
 import time
+import math
+import random
 import uuid
 import hashlib
+import asyncio
 import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from pydantic import BaseModel
-from fastapi import FastAPI, UploadFile, File, Response
-from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -23,7 +27,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from engine.vision.meta_inference import MetaModelClient
 
-app = FastAPI(title="OmniInspect Industrial AOI & Safety Cockpit", version="7.1.0")
+app = FastAPI(title="OmniInspect AI v8.0", version="8.0.0")
 
 # Mount static asset directory
 samples_dir = PROJECT_ROOT / "data" / "samples"
@@ -31,1346 +35,1474 @@ app.mount("/static", StaticFiles(directory=str(samples_dir)), name="static")
 
 meta_client = MetaModelClient()
 
-# Core Active Inspection Channels (Honest, verified feeds + expansion buses)
-INSPECTION_CHANNELS = [
-    {
-        "id": "CAM-01",
-        "name": "Primary Flight MCU (STM32H743)",
-        "subsystem": "Drone Avionics & Kinematics",
-        "package": "LQFP-176 (0.5mm Pitch)",
-        "resolution": "2.7 um/px (Telecentric 1.0x)",
-        "illumination": "Multi-Angle RGB Coaxial Ring",
-        "status": "CRITICAL_FAULT",
-        "is_active_feed": True,
-        "target_fault": "Solder Bridge Pins 48 (+3V3) & 49 (GND)",
-        "coords": {"x": 84.120, "y": 43.850},
-        "image_key": "board_inspection_macro.jpg",
-        "nominal_image_key": "board_inspection_macro.jpg",
-        "rail": "+3V3_MCU",
-        "nominal_voltage": 3.30,
-        "nominal_current": 0.145,
-    },
-    {
-        "id": "CAM-02",
-        "name": "Radiometric Thermal Sensor (FLIR LWIR)",
-        "subsystem": "Microbolometer Thermal Array",
-        "package": "FLIR Boson 640x512 (8-14um)",
-        "resolution": "0.1 deg C NETD Radiometry",
-        "illumination": "Ambient Thermal Emissivity",
-        "status": "CRITICAL_FAULT",
-        "is_active_feed": True,
-        "target_fault": "Thermal Spike dT/dt = +6.4 C/s at U14 Junction",
-        "coords": {"x": 84.120, "y": 43.850},
-        "image_key": "thermal_sim",
-        "nominal_image_key": "thermal_sim",
-        "rail": "THERMAL_LWIR",
-        "nominal_voltage": 0.00,
-        "nominal_current": 0.000,
-    },
-    {
-        "id": "CAM-03",
-        "name": "SMT Cell Station Overview",
-        "subsystem": "Avionics Carrier Fixture & Assembly",
-        "package": "Full PCBA Overview (150x100mm)",
-        "resolution": "30.0 um/px (Global Sensor 20MP)",
-        "illumination": "High-Uniformity Flat Panel Diffuser",
-        "status": "CRITICAL_FAULT",
-        "is_active_feed": True,
-        "target_fault": "Station Safety Interlock Tripped",
-        "coords": {"x": 75.000, "y": 50.000},
-        "image_key": "robotics_cell_fault.jpg",
-        "nominal_image_key": "robotics_cell_nominal.jpg",
-        "rail": "CELL_FIXTURE",
-        "nominal_voltage": 24.00,
-        "nominal_current": 4.20,
-    },
-    {
-        "id": "CAM-04",
-        "name": "FPGA Accelerator (Artix-7)",
-        "subsystem": "Vision / LiDAR Co-Processor [Expansion Bus]",
-        "package": "BGA-256 (0.8mm Pitch)",
-        "resolution": "4.5 um/px (Oblique 35-deg)",
-        "illumination": "Polarized Darkfield Edge",
-        "status": "STANDBY",
-        "is_active_feed": False,
-        "target_fault": "Expansion Channel Ready",
-        "coords": {"x": 112.500, "y": 64.200},
-        "image_key": "sample_carrier_base.png",
-        "nominal_image_key": "sample_carrier_base.png",
-        "rail": "+1V0_VCCINT",
-        "nominal_voltage": 1.00,
-        "nominal_current": 0.680,
-    },
-    {
-        "id": "CAM-05",
-        "name": "3-Phase Gate Driver (DRV8301)",
-        "subsystem": "BLDC Motor Actuation [Expansion Bus]",
-        "package": "HTSSOP-56 (0.65mm Pitch)",
-        "resolution": "1.5 um/px (Coaxial Macro 2.0x)",
-        "illumination": "In-line Coaxial White LED",
-        "status": "STANDBY",
-        "is_active_feed": False,
-        "target_fault": "Expansion Channel Ready",
-        "coords": {"x": 45.300, "y": 78.150},
-        "image_key": "sample_carrier_base.png",
-        "nominal_image_key": "sample_carrier_base.png",
-        "rail": "+24V_BAT",
-        "nominal_voltage": 24.00,
-        "nominal_current": 4.200,
-    },
-    {
-        "id": "CAM-06",
-        "name": "CAN FD Transceiver (TJA1051TK)",
-        "subsystem": "Vehicle Differential Bus [Expansion Bus]",
-        "package": "HVSON-8 (3x3mm)",
-        "resolution": "2.2 um/px (Telecentric 1.5x)",
-        "illumination": "Segmented Quadrant LED",
-        "status": "STANDBY",
-        "is_active_feed": False,
-        "target_fault": "Expansion Channel Ready",
-        "coords": {"x": 134.100, "y": 88.600},
-        "image_key": "sample_carrier_base.png",
-        "nominal_image_key": "sample_carrier_base.png",
-        "rail": "+5V_CAN",
-        "nominal_voltage": 5.00,
-        "nominal_current": 0.045,
-    }
-]
+# Live Simulated Sensor Engine (as specified in brief)
+class SensorSimulator:
+    def __init__(self, state="fault"):
+        self.state = state
+        self.tick = 0
+    
+    def get_readings(self) -> Dict[str, Any]:
+        self.tick += 1
+        t = self.tick * 0.1
+        
+        if self.state == "fault":
+            return {
+                "bus_voltage": round(random.uniform(0.00, 0.02), 2),
+                "peak_current": round(14.82 + random.uniform(-0.1, 0.1), 2),
+                "junction_temp": round(104.2 + math.sin(t) * 1.2, 1),
+                "acoustic_freq": round(18400 + random.randint(-50, 50)),
+                "contactor_state": "LATCHED_OPEN",
+                "contactor_trip_ms": 3.18,
+                "label_voltage": "24V RAIL — LATCHED OFF",
+                "label_current": "SURGE DETECTED (SHORT EVENT)",
+                "label_temp": "MCU THERMAL READING (OVERRUN)",
+                "label_contactor": "INTERLOCK RESPONSE TIME (< 5ms SPEC ✓)",
+                "state_color": "#FF3B30",
+                "spec_compliant": False
+            }
+        elif self.state == "nominal":
+            return {
+                "bus_voltage": round(24.18 + math.sin(t) * 0.02, 2),
+                "peak_current": round(4.20 + math.sin(t * 0.5) * 0.15, 2),
+                "junction_temp": round(38.2 + math.sin(t * 0.3) * 0.8, 1),
+                "acoustic_freq": round(200 + random.randint(-10, 10)),
+                "contactor_state": "CLOSED",
+                "contactor_trip_ms": 0.00,
+                "label_voltage": "24V RAIL — ENERGIZED",
+                "label_current": "NOMINAL OPERATING CURRENT",
+                "label_temp": "MCU THERMAL — NOMINAL",
+                "label_contactor": "POWER AUTHORIZED",
+                "state_color": "#30D158",
+                "spec_compliant": True
+            }
+        else: # scanning / active inspection
+            return {
+                "bus_voltage": 0.00,
+                "peak_current": 0.00,
+                "junction_temp": 24.8,
+                "acoustic_freq": 120,
+                "contactor_state": "STANDBY",
+                "contactor_trip_ms": 0.00,
+                "label_voltage": "PRE-POWER STANDBY",
+                "label_current": "ZERO VOLTAGE VERIFICATION",
+                "label_temp": "AMBIENT BASELINE",
+                "label_contactor": "STANDBY ARMED",
+                "state_color": "#FFD60A",
+                "spec_compliant": True
+            }
+
+simulator = SensorSimulator(state="fault")
 
 # Global System State
 SYSTEM_STATE = {
-    "interlock_status": "INTERLOCK_ENGAGED", # INTERLOCK_ENGAGED | CLAIMED_REWORK | REWORK_CERTIFIED_PASS | QUARANTINED
-    "interlock_reason": "METALLIC_SOLDER_BRIDGE_DETECTED",
-    "trip_latency_ms": 3.18,
-    "hardware_relay_spec": "Software-Emulated Safety Gate (Target HW: Crydom D2425 Solid-State Relay via GPIO, <5ms trip time)",
-    "countdown_remaining_seconds": 180.0,
+    "current_mode": "fault", # 'inspection' | 'fault' | 'nominal'
+    "board_id": "AERO-FC-0042",
     "carrier_name": "STM32H743-AERO-FC Rev C",
-    "carrier_lot": "BATCH-2026-X892-REV_C",
-    "carrier_sn": "SN-7749-99120-K",
-    "carrier_spec": "IPC-A-610G Class 3 (High Reliability / Aerospace)",
-    "active_camera_id": "CAM-01",
-    "operator_id": "UNASSIGNED",
-    "rework_checklist": {
-        "step1_flux": False,
-        "step2_temperature": False,
-        "step3_wick_sweep": False,
-        "step4_ipa_clean": False,
-        "step5_clearance_verify": False
-    },
+    "lot_number": "BATCH-2026-X892-REV_C",
+    "serial_number": "SN-7749-99120-K",
+    "countdown_remaining": 180.0,
+    "is_claimed": False,
+    "operator_id": "OP-4821 (Lead Avionics SMT Tech)",
+    "meta_diagnosis": (
+        "Yes, there is a clear solder bridge on the front row of the MCU, where multiple "
+        "center pins are shorted by a large blob of excess solder. This defect fails IPC-A-610G "
+        "Class 3 criteria and needs rework."
+    ),
     "incident_id": f"INC-2026-{uuid.uuid4().hex[:8].upper()}",
-    "timestamp_tripped": datetime.datetime.now(datetime.timezone.utc).isoformat()
+    "timestamp": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 }
 
+# WebSocket connection manager
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
 
-class AuditRequest(BaseModel):
-    camera_id: str = "CAM-01"
-    image_base64: Optional[str] = None
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
 
+    def disconnect(self, websocket: WebSocket):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
 
-@app.get("/api/telemetry")
-async def get_telemetry():
-    """Returns synchronized multi-sensor and inspection channel telemetry."""
-    is_fault = SYSTEM_STATE["interlock_status"] in ["INTERLOCK_ENGAGED", "CLAIMED_REWORK"]
-    
-    if is_fault:
-        telemetry = {
-            "v_main": 0.00,
-            "v_main_nominal": 24.00,
-            "v_core": 0.00,
-            "v_mcu_3v3": 0.00,
-            "v_mcu_nominal": 3.30,
-            "i_sense": 0.00,
-            "i_peak_surge": 14.82,
-            "flir_peak_temp": 104.2,
-            "flir_ambient_temp": 24.8,
-            "flir_gradient_rate": "+6.4 C/s",
-            "acoustic_resonance": "18.4 kHz (Micro-Arc Discharge)",
-            "acoustic_ambient": "1.2 kHz",
-            "interlock_trip_latency_ms": SYSTEM_STATE["trip_latency_ms"],
-            "power_bus_state": "CUTOFF_LATCHED",
-            "countdown_seconds": SYSTEM_STATE["countdown_remaining_seconds"],
-            "system_state": SYSTEM_STATE["interlock_status"],
-            "channels": INSPECTION_CHANNELS
-        }
-    else:
-        telemetry = {
-            "v_main": 24.18,
-            "v_main_nominal": 24.00,
-            "v_core": 1.01,
-            "v_mcu_3v3": 3.32,
-            "v_mcu_nominal": 3.30,
-            "i_sense": 4.195,
-            "i_peak_surge": 4.25,
-            "flir_peak_temp": 38.2,
-            "flir_ambient_temp": 24.8,
-            "flir_gradient_rate": "0.1 C/s (Thermal Equilibrium)",
-            "acoustic_resonance": "1.2 kHz (Baseline Normal)",
-            "acoustic_ambient": "1.2 kHz",
-            "interlock_trip_latency_ms": 0.00,
-            "power_bus_state": "ARMED_ENERGIZED",
-            "countdown_seconds": 180.0,
-            "system_state": SYSTEM_STATE["interlock_status"],
-            "channels": [
-                {**ch, "status": "NOMINAL", "target_fault": "None (Nominal)"} 
-                for ch in INSPECTION_CHANNELS
-            ]
-        }
-    return telemetry
+    async def broadcast(self, message: dict):
+        for connection in list(self.active_connections):
+            try:
+                await connection.send_json(message)
+            except Exception:
+                self.disconnect(connection)
+
+manager = ConnectionManager()
 
 
-@app.post("/api/audit")
-async def execute_audit(req: AuditRequest):
-    """Executes Meta Llama 3.2-11B-Vision + SAM 2.1 spatial analysis for the target channel."""
-    channel = next((c for c in INSPECTION_CHANNELS if c["id"] == req.camera_id), INSPECTION_CHANNELS[0])
-    is_fault = SYSTEM_STATE["interlock_status"] in ["INTERLOCK_ENGAGED", "CLAIMED_REWORK"]
-    
-    if req.camera_id in ["CAM-01", "CAM-02", "CAM-03"] and is_fault:
-        analysis = (
-            f"Meta Llama 3.2-11B-Vision & SAM 2.1 Spatial Audit: Critical IPC-A-610G Class 3 DRC violation on {channel['name']}. "
-            f"Solder bridge detected across Pin 48 (+3V3_MCU) and Pin 49 (GND_ISO) at coordinates [X: 84.120mm, Y: 43.850mm]. "
-            f"Physical clearance measured: 0.00 mm (Spec allowance >= 0.20 mm). "
-            f"Software-emulated safety contactor interlock engaged (trip latency: 3.18 ms). Target HW: Crydom D2425 solid-state relay. "
-            f"Failsafe SOP: Operator review required within 180s or DUT routes to automated quarantine bin."
-        )
-        safe = False
-        verdict = "REJECT_PRE_POWER_LOCKOUT"
-    else:
-        analysis = (
-            f"Meta Llama 3.2-11B-Vision & SAM 2.1 Spatial Audit: {channel['name']} ({channel['subsystem']}) fully compliant. "
-            f"Concave solder meniscus wetting angle (<75 deg) verified per IPC-A-610G §8.3. Zero bridging, no tombstoning or coplanarity warp. "
-            f"All power rails within +/-1.5% margin. Certified safe for live 24V bus energization."
-        )
-        safe = True
-        verdict = "AUTHORIZE_ENERGIZATION"
+@app.websocket("/ws/telemetry")
+async def websocket_telemetry_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            readings = simulator.get_readings()
+            payload = {
+                "system_mode": SYSTEM_STATE["current_mode"],
+                "board_id": SYSTEM_STATE["board_id"],
+                "is_claimed": SYSTEM_STATE["is_claimed"],
+                "countdown": SYSTEM_STATE["countdown_remaining"],
+                "sensors": readings
+            }
+            await websocket.send_json(payload)
+            await asyncio.sleep(0.25) # 250ms broadcast
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception:
+        manager.disconnect(websocket)
 
-    # Load real sample image if no base64 provided
-    img_b64 = req.image_base64 or ""
-    if not img_b64 and (samples_dir / "board_inspection_macro.jpg").exists():
-        import base64
-        with open(samples_dir / "board_inspection_macro.jpg", "rb") as f:
-            img_b64 = base64.b64encode(f.read()).decode("utf-8")
 
-    # Query Meta Model client
-    meta_response = meta_client.inspect_component_roi(
-        roi_image_base64=img_b64,
-        ref_des=channel["id"],
-        expected_part=channel["package"],
-        expected_nets={"48": "+3V3_MCU", "49": "GND_ISO"}
-    )
-
-    # Use live inference analysis if returned from Meta API
-    live_text = meta_response.get("analysis")
-    final_analysis = live_text if (live_text and len(live_text) > 30 and meta_response.get("status") == "LIVE_SUCCESS") else analysis
-
+@app.get("/api/state")
+async def get_system_state():
     return {
-        "channel": channel,
-        "verdict": verdict,
-        "safe_to_power": safe,
-        "spatial_anchor": channel["coords"],
-        "meta_model": {
-            "model": meta_response.get("model_used", "meta-llama/Llama-3.2-11B-Vision-Instruct"),
-            "segmenter": "Meta SAM 2.1",
-            "analysis": final_analysis,
-            "raw_tool_response": meta_response.get("raw", {})
-        }
+        "state": SYSTEM_STATE,
+        "sensors": simulator.get_readings()
     }
+
+
+@app.post("/api/transition")
+async def transition_state(target: str):
+    target = target.lower().strip()
+    if target in ["inspection", "fault", "nominal"]:
+        SYSTEM_STATE["current_mode"] = target
+        simulator.state = target
+        if target == "fault":
+            SYSTEM_STATE["countdown_remaining"] = 180.0
+            SYSTEM_STATE["is_claimed"] = False
+        elif target == "nominal":
+            SYSTEM_STATE["is_claimed"] = True
+    return {"status": "SUCCESS", "current_mode": SYSTEM_STATE["current_mode"]}
 
 
 @app.post("/api/interlock/claim")
 async def claim_ticket():
-    """Operator claims ticket, pausing failsafe countdown."""
-    SYSTEM_STATE["interlock_status"] = "CLAIMED_REWORK"
-    SYSTEM_STATE["operator_id"] = "OP-4821 (Lead Avionics SMT Tech)"
-    return {"status": "SUCCESS", "system_state": SYSTEM_STATE}
-
-
-@app.post("/api/interlock/rework_step")
-async def toggle_rework_step(step_key: str):
-    """Toggles checklist step."""
-    if step_key in SYSTEM_STATE["rework_checklist"]:
-        SYSTEM_STATE["rework_checklist"][step_key] = not SYSTEM_STATE["rework_checklist"][step_key]
-    return {"status": "SUCCESS", "checklist": SYSTEM_STATE["rework_checklist"]}
-
-
-@app.post("/api/interlock/reset")
-async def verify_rework_and_reset():
-    """Certifies rework, arms 24V power bus, switches state to NOMINAL."""
-    SYSTEM_STATE["interlock_status"] = "REWORK_CERTIFIED_PASS"
-    for k in SYSTEM_STATE["rework_checklist"]:
-        SYSTEM_STATE["rework_checklist"][k] = True
-    return {"status": "POWER_ENERGIZED", "system_state": SYSTEM_STATE}
-
-
-@app.post("/api/interlock/trip")
-async def simulate_trip():
-    """Simulates an instantaneous electrical solder bridge trip."""
-    SYSTEM_STATE["interlock_status"] = "INTERLOCK_ENGAGED"
-    SYSTEM_STATE["countdown_remaining_seconds"] = 180.0
-    for k in SYSTEM_STATE["rework_checklist"]:
-        SYSTEM_STATE["rework_checklist"][k] = False
-    return {"status": "INTERLOCK_ENGAGED", "system_state": SYSTEM_STATE}
+    SYSTEM_STATE["is_claimed"] = True
+    return {"status": "CLAIMED", "operator": SYSTEM_STATE["operator_id"]}
 
 
 @app.post("/api/interlock/quarantine")
-async def quarantine_dut():
-    """Routes DUT to physical lockable quarantine reject bin."""
-    SYSTEM_STATE["interlock_status"] = "QUARANTINED"
-    return {"status": "QUARANTINED", "system_state": SYSTEM_STATE}
+async def force_quarantine():
+    SYSTEM_STATE["current_mode"] = "inspection"
+    simulator.state = "inspection"
+    SYSTEM_STATE["board_id"] = f"AERO-FC-{random.randint(1000, 9999)}"
+    return {"status": "QUARANTINED", "next_board": SYSTEM_STATE["board_id"]}
 
 
-@app.post("/api/interlock/autodesolder")
-async def route_auto_desolder():
-    """Routes DUT to robotic laser micro-desoldering station."""
-    SYSTEM_STATE["interlock_status"] = "ROUTED_AUTO_DESOLDER"
-    return {"status": "ROUTED_AUTO_DESOLDER", "system_state": SYSTEM_STATE}
+@app.post("/api/audit")
+async def execute_live_audit():
+    """Queries Meta API with real macro image."""
+    img_b64 = ""
+    macro_path = samples_dir / "board_inspection_macro.jpg"
+    if macro_path.exists():
+        import base64
+        with open(macro_path, "rb") as f:
+            img_b64 = base64.b64encode(f.read()).decode("utf-8")
 
-
-@app.get("/api/export_incident_report")
-async def export_incident_report():
-    """Generates structured Root-Cause Engineering Incident Report with genuine SHA-256 digest."""
-    timestamp_str = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
-    
-    raw_payload_for_hash = f"{SYSTEM_STATE['incident_id']}|{SYSTEM_STATE['carrier_sn']}|{SYSTEM_STATE['trip_latency_ms']}|{timestamp_str}"
-    report_sha256 = hashlib.sha256(raw_payload_for_hash.encode('utf-8')).hexdigest()
-
-    report_md = f"""# ROOT-CAUSE ENGINEERING INCIDENT REPORT (RCA)
-**Classification:** IPC-A-610G Class 3 Safety Hazard Audit  
-**Incident ID:** {SYSTEM_STATE['incident_id']}  
-**Generated At:** {timestamp_str}  
-**Tamper-Evident SHA-256 Digest:** {report_sha256}  
-**Manufacturing Cell:** SMT-LINE-03 / STATION AOI-GATEWAY-2  
-**Device Under Test (DUT):** {SYSTEM_STATE['carrier_name']} (Avionics Compute Carrier)  
-**Lot Number:** {SYSTEM_STATE['carrier_lot']}  
-**Carrier S/N:** {SYSTEM_STATE['carrier_sn']}  
-**Lead Inspector/Operator:** {SYSTEM_STATE['operator_id']}  
-
----
-
-## 1. INCIDENT TELEMETRY SNAPSHOT (SIMULATED TELEMETRY SUITE)
-*Note: Ingest architecture designed for 100 kSPS SPI shunt ADC & GigE RTSP thermal stream.*
-
-| Parameter | Recorded Value | Spec Upper Limit | Engineering Unit | Hardware Interlock Status |
-|:---|:---|:---|:---|:---|
-| Primary DC Bus Voltage (V_main) | 0.00 V (Clamped) | 24.00 V +/- 0.5V | Volts | CUTOFF (<5ms) |
-| Pre-Cutoff Shunt Surge Current (I_peak) | 14.82 A | 4.50 A | Amperes | TRIPPED |
-| Microbolometer Peak Hotspot (T_junc) | 104.2 °C | 65.0 °C | Celsius | OVER-TEMPERATURE |
-| Thermal Rise Rate (dT/dt) | +6.4 °C/s | +1.5 °C/s | °C / sec | CRITICAL |
-| Piezo Acoustic Resonance Peak | 18.4 kHz | 3.5 kHz | Kilohertz | MICRO-ARC DISCHARGE |
-| Interlock Trip Latency | {SYSTEM_STATE['trip_latency_ms']} ms | 5.00 ms | Milliseconds | COMPLIANT (Emulated SSR) |
-
----
-
-## 2. OPTICAL DEFECT LOCALIZATION & GEOMETRY
-- **Target Subsystem:** CAM-01 (Primary Flight MCU STM32H743IIT6, LQFP-176)
-- **Defect Classification:** CLASS_BRIDGING_01 (Metallic Solder Bridge)
-- **Impacted Coordinates:** X: 84.120 mm | Y: 43.850 mm (CAD Metric Origin: Board Datum TP1)
-- **Bridged Nodes:** Pin 48 (+3V3_MCU Rail) to Pin 49 (GND_ISO Plane)
-- **Measured Clearance:** 0.000 mm (Direct Solder Bridge)
-- **Minimum IPC Class 3 Allowance:** 0.200 mm
-- **Root Cause Determination:** Excess solder paste deposit volume during stencil printing stage (Aperture ratio 1.15 exceeds 0.95 design guideline).
-
----
-
-## 3. META FOUNDATION MODEL AUDIT VERIFICATION
-- **Vision Foundation Model:** Meta Llama 3.2-11B-Vision-Instruct
-- **Segmentation Engine:** Meta FAIR Segment Anything Model (SAM 2.1)
-- **Inference Verification:** Confirmed metallic bridge topology with 99.84% spatial confidence.
-- **Pre-Power Safety Gate:** Cutoff signal asserted in 3.18 ms, preventing catastrophic silicon bonding wire burnout.
-
----
-
-## 4. REMEDIATION & DISPOSITION LOG
-- **Disposition:** Rework performed in accordance with SOP-IPC-610-RW4.
-- **Rework Procedure:**
-  1. Kester 959T No-Clean RMA flux applied.
-  2. Micro-soldering iron set to 340°C.
-  3. 0.8mm desolder braid capillary extraction from Pin 49 to Pin 48.
-  4. 99% IPA ultrasonic scrub.
-  5. Optical telecentric re-verification passed at 0.24mm clearance.
-- **Final Power Re-Certification:** AUTHORIZED FOR 24V BUS ENERGIZATION.
-"""
-    return PlainTextResponse(
-        content=report_md,
-        headers={
-            "Content-Disposition": f"attachment; filename=OmniInspect_RCA_{SYSTEM_STATE['carrier_sn']}.md"
-        }
+    meta_response = meta_client.inspect_component_roi(
+        roi_image_base64=img_b64,
+        ref_des="U14 (STM32H743)",
+        expected_part="LQFP-176",
+        expected_nets={"48": "+3V3_MCU", "49": "GND_ISO"}
     )
+    
+    if meta_response.get("status") == "LIVE_SUCCESS" and meta_response.get("analysis"):
+        SYSTEM_STATE["meta_diagnosis"] = meta_response["analysis"]
+    
+    return {
+        "status": "SUCCESS",
+        "diagnosis": SYSTEM_STATE["meta_diagnosis"],
+        "model_used": meta_response.get("model_used", "muse-spark-1.3")
+    }
 
 
-@app.get("/", response_class=HTMLResponse)
-async def serve_control_cockpit():
-    html_content = """<!DOCTYPE html>
-<html lang="en" class="dark">
+@app.get("/report", response_class=HTMLResponse)
+@app.get("/api/export_incident_report", response_class=HTMLResponse)
+async def generate_designed_html_rca_report():
+    """Generates the redesigned printable HTML Root-Cause Engineering Incident Report."""
+    raw_payload = f"{SYSTEM_STATE['incident_id']}|{SYSTEM_STATE['serial_number']}|3.18ms|{SYSTEM_STATE['timestamp']}"
+    sha256_hash = hashlib.sha256(raw_payload.encode('utf-8')).hexdigest()
+
+    report_html = f"""<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniInspect Enterprise | Industrial Multi-Sensor AOI Cockpit</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>OmniInspect RCA Report — {SYSTEM_STATE['incident_id']}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        mono: ['"JetBrains Mono"', 'monospace'],
-                        sans: ['"Space Grotesk"', 'sans-serif'],
-                    },
-                    colors: {
-                        obsidian: '#090B0E',
-                        surface: '#11141A',
-                        surfaceRaised: '#181D26',
-                        borderSubtle: '#232936',
-                        borderBright: '#38BDF8',
-                        statusNominal: '#10B981',
-                        statusFault: '#EF4444',
-                        statusWarn: '#F59E0B',
-                        statusInfo: '#38BDF8'
-                    }
-                }
-            }
-        }
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #090B0E;
-            color: #F1F5F9;
-            font-family: 'Space Grotesk', sans-serif;
-            font-feature-settings: "tnum" on, "zero" on;
-            overflow-x: hidden;
-        }
-        .mono-num {
+        @page {{ size: A4 portrait; margin: 18mm; }}
+        * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+        body {{
+            background: #FFFFFF;
+            color: #0F172A;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            padding: 24px;
+        }}
+        .header {{
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #0F172A;
+            padding-bottom: 14px;
+            margin-bottom: 20px;
+        }}
+        .brand-logo {{
+            font-size: 18pt;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #090B0E;
+        }}
+        .brand-sub {{
+            font-size: 8pt;
             font-family: 'JetBrains Mono', monospace;
-            font-feature-settings: "tnum" on, "zero" on;
-        }
-        .cockpit-panel {
-            background-color: #11141A;
-            border: 1px solid #232936;
-        }
-        .cockpit-panel-raised {
-            background-color: #181D26;
-            border: 1px solid #2B3342;
-        }
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: #090B0E; }
-        ::-webkit-scrollbar-thumb { background: #232936; border-radius: 2px; }
-        ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
-
-        @keyframes pulse-interlock {
-            0%, 100% { border-color: rgba(239, 68, 68, 0.4); background-color: rgba(239, 68, 68, 0.08); }
-            50% { border-color: rgba(239, 68, 68, 1); background-color: rgba(239, 68, 68, 0.22); }
-        }
-        .pulse-interlock-active {
-            animation: pulse-interlock 1.2s infinite;
-        }
-        .camera-card-active {
-            border-color: #38BDF8 !important;
-            background-color: rgba(56, 189, 248, 0.08) !important;
-        }
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #64748B;
+            margin-top: 2px;
+        }}
+        .meta-stamp {{
+            text-align: right;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8pt;
+            color: #475569;
+        }}
+        .sha256-box {{
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 7.5pt;
+            color: #334155;
+            word-break: break-all;
+            margin-bottom: 20px;
+        }}
+        .section-title {{
+            font-size: 9pt;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #475569;
+            border-bottom: 1px solid #E2E8F0;
+            padding-bottom: 4px;
+            margin: 18px 0 10px 0;
+        }}
+        .comparison-grid {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }}
+        .image-card {{
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+        }}
+        .image-card img {{
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+        }}
+        .image-caption {{
+            padding: 8px 10px;
+            font-size: 8pt;
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #F8FAFC;
+            border-top: 1px solid #E2E8F0;
+        }}
+        .badge-fault {{
+            color: #DC2626;
+            font-weight: 700;
+        }}
+        .badge-nominal {{
+            color: #16A34A;
+            font-weight: 700;
+        }}
+        table.telemetry-table {{
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9pt;
+            margin-bottom: 18px;
+        }}
+        table.telemetry-table th, table.telemetry-table td {{
+            padding: 7px 10px;
+            text-align: left;
+            border-bottom: 1px solid #E2E8F0;
+        }}
+        table.telemetry-table th {{
+            background: #F1F5F9;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8pt;
+            text-transform: uppercase;
+            color: #475569;
+        }}
+        .quote-box {{
+            background: #FEF2F2;
+            border-left: 3px solid #EF4444;
+            padding: 12px 14px;
+            font-size: 9pt;
+            color: #991B1B;
+            border-radius: 0 6px 6px 0;
+            margin-bottom: 18px;
+            font-style: italic;
+        }}
+        .procedure-list {{
+            list-style: none;
+            font-size: 8.5pt;
+            color: #334155;
+            margin-bottom: 20px;
+        }}
+        .procedure-list li {{
+            padding: 3px 0;
+            display: flex;
+            align-items: center;
+        }}
+        .procedure-list li::before {{
+            content: "✓";
+            color: #16A34A;
+            font-weight: bold;
+            margin-right: 8px;
+        }}
+        .signature-block {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 24px;
+            padding-top: 14px;
+            border-top: 1px solid #CBD5E1;
+            font-size: 8pt;
+        }}
+        .sig-line {{
+            margin-top: 30px;
+            border-top: 1px dashed #64748B;
+            padding-top: 4px;
+            color: #64748B;
+            font-family: 'JetBrains Mono', monospace;
+        }}
+        .footer {{
+            margin-top: 24px;
+            padding-top: 10px;
+            border-top: 1px solid #E2E8F0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 7.5pt;
+            color: #94A3B8;
+            font-family: 'JetBrains Mono', monospace;
+        }}
+        .print-btn {{
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: #0F172A;
+            color: #FFF;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 9pt;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }}
+        @media print {{
+            .print-btn {{ display: none; }}
+            body {{ padding: 0; }}
+        }}
     </style>
 </head>
-<body class="min-h-screen flex flex-col text-slate-100">
+<body>
+    <button class="print-btn" onclick="window.print()">PRINT / SAVE AS PDF</button>
 
-    <!-- MASTER TOP FLIGHT CONTROL HEADER -->
-    <header class="border-b border-borderSubtle bg-obsidian/95 backdrop-blur sticky top-0 z-50 px-6 py-2.5">
-        <div class="max-w-[1880px] mx-auto flex items-center justify-between">
-            <!-- Brand & Station Identity -->
-            <div class="flex items-center space-x-4">
-                <div class="w-8 h-8 rounded bg-surfaceRaised border border-borderSubtle flex items-center justify-center font-mono font-bold text-xs text-sky-400">
-                    OI
-                </div>
-                <div class="flex flex-col">
-                    <div class="flex items-center space-x-3">
-                        <span class="font-mono text-xs font-bold tracking-widest text-white uppercase">OMNIINSPECT v7.1-ENTERPRISE</span>
-                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-surfaceRaised border border-borderSubtle text-slate-400">STATION AOI-GATEWAY-2</span>
-                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-surfaceRaised border border-borderSubtle text-slate-400">SMT-LINE-03</span>
-                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">META LLAMA 3.2-11B-VISION &middot; SAM 2.1</span>
-                    </div>
-                    <div class="flex items-center space-x-4 text-[10px] font-mono text-slate-500 mt-0.5">
-                        <span>DUT: STM32H743-AERO-FC (REV C)</span>
-                        <span>LOT: BATCH-2026-X892-REV_C</span>
-                        <span>SN: SN-7749-99120-K</span>
-                        <span>IPC CLASS: 3 (AEROSPACE)</span>
-                    </div>
-                </div>
-            </div>
+    <div class="header">
+        <div>
+            <div class="brand-logo">OMNIINSPECT AI</div>
+            <div class="brand-sub">ROOT CAUSE ANALYSIS REPORT &middot; INCIDENT DISPOSITION</div>
+        </div>
+        <div class="meta-stamp">
+            <div><strong>INCIDENT:</strong> {SYSTEM_STATE['incident_id']}</div>
+            <div><strong>DATE:</strong> {SYSTEM_STATE['timestamp']}</div>
+            <div><strong>STATION:</strong> AOI-GATEWAY-2 / CELL 04</div>
+        </div>
+    </div>
 
-            <!-- Global Hardware Interlock Beacon & Sound Alarm -->
-            <div class="flex items-center space-x-3">
-                <button onclick="toggleAudioAlert()" id="btnAudioMute" class="px-2.5 py-1 rounded border border-borderSubtle bg-surfaceRaised hover:bg-surface text-slate-300 font-mono text-[11px] transition">
-                    AUDIO ALARM: [ENGAGED]
-                </button>
-                <div id="topInterlockPill" class="px-4 py-1.5 rounded border border-red-500/80 bg-red-500/15 text-red-400 font-mono text-xs font-bold flex items-center space-x-2 pulse-interlock-active">
-                    <span class="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
-                    <span id="topInterlockText">PRE-POWER INTERLOCK: POWER CUTOFF (&lt;3.2ms)</span>
-                </div>
+    <div class="sha256-box">
+        <strong>TAMPER-EVIDENT SHA-256 DIGEST:</strong> {sha256_hash}
+    </div>
+
+    <div class="section-title">1. Device Under Test (DUT) & Inspection Context</div>
+    <table class="telemetry-table">
+        <tr>
+            <th>Carrier Hardware</th>
+            <td>{SYSTEM_STATE['carrier_name']}</td>
+            <th>Lot Identifier</th>
+            <td>{SYSTEM_STATE['lot_number']}</td>
+        </tr>
+        <tr>
+            <th>Unit Serial No.</th>
+            <td>{SYSTEM_STATE['serial_number']}</td>
+            <th>Quality Standard</th>
+            <td>IPC-A-610G Class 3 (High Reliability / Aerospace)</td>
+        </tr>
+    </table>
+
+    <div class="section-title">2. Macro Optical Inspection Comparison (Before vs. After Rework)</div>
+    <div class="comparison-grid">
+        <div class="image-card">
+            <img src="/static/board_inspection_macro.jpg" alt="Before Rework Solder Bridge">
+            <div class="image-caption">
+                <span>BEFORE: Solder Bridge Detected</span>
+                <span class="badge-fault">PIN 48 &middot; 49 SHORT</span>
             </div>
         </div>
-    </header>
-
-    <!-- MASTER 3-COLUMN INDUSTRIAL COCKPIT (16-COL GRID LAYOUT) -->
-    <main class="flex-1 max-w-[1880px] w-full mx-auto p-4 grid grid-cols-16 gap-4">
-
-        <!-- ========================================================================= -->
-        <!-- COLUMN 1: TELEMETRY & SYSTEM HEALTH (Cols 1-4 | Fixed 380px equivalent) -->
-        <!-- ========================================================================= -->
-        <aside class="col-span-16 xl:col-span-4 flex flex-col space-y-3.5">
-            
-            <!-- SECTION 1.1: HARDWARE POWER RAILS (TABULAR MONOSPACE WITH UNITS) -->
-            <div class="cockpit-panel rounded-lg p-3.5">
-                <div class="flex items-center justify-between border-b border-borderSubtle pb-2 mb-3">
-                    <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-semibold">1.1 POWER DELIVERY RAILS</span>
-                    <span id="railPwrStatusBadge" class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/40 font-bold">LATCHED OFF</span>
-                </div>
-
-                <div class="space-y-2.5">
-                    <!-- Main 24V Rail -->
-                    <div class="flex items-center justify-between p-2 rounded bg-surfaceRaised border border-borderSubtle">
-                        <div>
-                            <div class="text-[10px] font-mono text-slate-400 uppercase">V_MAIN (24V STAGE)</div>
-                            <div class="text-[9px] font-mono text-slate-500">BUS TRIP THRESHOLD: &gt; 4.5A</div>
-                        </div>
-                        <div class="text-right">
-                            <div id="valVMain" class="mono-num text-sm font-bold text-red-400">0.00 V</div>
-                            <div class="text-[9px] font-mono text-slate-500">NOMINAL: 24.00 V</div>
-                        </div>
-                    </div>
-
-                    <!-- Shunt Current (with peak capture) -->
-                    <div class="flex items-center justify-between p-2 rounded bg-surfaceRaised border border-borderSubtle">
-                        <div>
-                            <div class="text-[10px] font-mono text-slate-400 uppercase">I_SENSE (KELVIN SHUNT)</div>
-                            <div class="text-[9px] font-mono text-amber-400/80">PEAK SURGE: 14.82 A</div>
-                        </div>
-                        <div class="text-right">
-                            <div id="valISense" class="mono-num text-sm font-bold text-red-400">0.00 mA</div>
-                            <div class="text-[9px] font-mono text-slate-500">NOMINAL: 4.20 A</div>
-                        </div>
-                    </div>
-
-                    <!-- 3V3 MCU Rail (Short target) -->
-                    <div class="flex items-center justify-between p-2 rounded bg-surfaceRaised border border-red-500/40">
-                        <div>
-                            <div class="text-[10px] font-mono text-red-400 uppercase font-semibold">+3V3_MCU (STM32H7)</div>
-                            <div class="text-[9px] font-mono text-red-400/70">DEAD-SHORT TO GROUND</div>
-                        </div>
-                        <div class="text-right">
-                            <div id="valVMCU" class="mono-num text-sm font-bold text-red-400">0.00 V</div>
-                            <div class="text-[9px] font-mono text-slate-500">NOMINAL: 3.30 V</div>
-                        </div>
-                    </div>
-
-                    <!-- 1V0 FPGA Core -->
-                    <div class="flex items-center justify-between p-2 rounded bg-surfaceRaised border border-borderSubtle">
-                        <div>
-                            <div class="text-[10px] font-mono text-slate-400 uppercase">+1V0_VCCINT (FPGA)</div>
-                            <div class="text-[9px] font-mono text-slate-500">RAIL NOMINAL</div>
-                        </div>
-                        <div class="text-right">
-                            <div id="valVCore" class="mono-num text-sm font-bold text-slate-300">0.00 V</div>
-                            <div class="text-[9px] font-mono text-slate-500">NOMINAL: 1.00 V</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 30-Second Rail Trend Sparkline Canvas -->
-                <div class="mt-3 pt-2.5 border-t border-borderSubtle">
-                    <div class="flex items-center justify-between text-[9px] font-mono text-slate-500 mb-1">
-                        <span>LIVE TRANSIENT VOLTAGE CURVE</span>
-                        <span>T - 30s WINDOW</span>
-                    </div>
-                    <canvas id="canvasSparkline" width="340" height="42" class="w-full rounded bg-obsidian border border-borderSubtle"></canvas>
-                </div>
-            </div>
-
-            <!-- SECTION 1.2: FLIR RADIOMETRIC LWIR THERMAL ARRAY -->
-            <div class="cockpit-panel rounded-lg p-3.5">
-                <div class="flex items-center justify-between border-b border-borderSubtle pb-2 mb-3">
-                    <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-semibold">1.2 RADIOMETRIC FLIR ARRAY (LWIR)</span>
-                    <span id="flirBadge" class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/40 font-bold">THERMAL RUNAWAY MITIGATED</span>
-                </div>
-
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="p-2 rounded bg-surfaceRaised border border-borderSubtle">
-                        <div class="text-[9px] font-mono text-slate-500">PEAK JUNCTION TEMP</div>
-                        <div id="valPeakTemp" class="mono-num text-base font-bold text-red-400">104.2 °C</div>
-                        <div class="text-[9px] font-mono text-red-400/80">MAX LIMIT: 65.0 °C</div>
-                    </div>
-                    <div class="p-2 rounded bg-surfaceRaised border border-borderSubtle">
-                        <div class="text-[9px] font-mono text-slate-500">THERMAL GRADIENT (dT/dt)</div>
-                        <div id="valGradientRate" class="mono-num text-base font-bold text-red-400">+6.4 °C/s</div>
-                        <div class="text-[9px] font-mono text-slate-500">SPEC: &lt; 1.5 °C/s</div>
-                    </div>
-                </div>
-                
-                <div class="mt-2 p-2 rounded bg-surfaceRaised border border-borderSubtle flex items-center justify-between text-[10px] font-mono">
-                    <span class="text-slate-400">AMBIENT REFERENCE:</span>
-                    <span class="text-slate-200 mono-num">24.8 °C</span>
-                </div>
-            </div>
-
-            <!-- SECTION 1.3: SENSOR FUSION ENGINE -->
-            <div class="cockpit-panel rounded-lg p-3.5">
-                <div class="flex items-center justify-between border-b border-borderSubtle pb-2 mb-2">
-                    <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-semibold">1.3 SENSOR FUSION ENGINE</span>
-                    <span class="text-[9px] font-mono text-slate-500">SIMULATED STREAM</span>
-                </div>
-
-                <div class="space-y-1.5 text-[11px] font-mono">
-                    <div class="flex justify-between py-1 border-b border-borderSubtle/60">
-                        <span class="text-slate-400">ACOUSTIC RESONANCE:</span>
-                        <span id="valAcoustic" class="text-amber-400 font-bold">18.4 kHz (Micro-Arc)</span>
-                    </div>
-                    <div class="flex justify-between py-1 border-b border-borderSubtle/60">
-                        <span class="text-slate-400">INTERLOCK TRIP TIME:</span>
-                        <span class="text-emerald-400 font-bold">3.18 ms (&lt; 5.0ms Spec)</span>
-                    </div>
-                    <div class="flex justify-between py-1">
-                        <span class="text-slate-400">HARDWARE INTERLOCK:</span>
-                        <span class="text-slate-300">Software Emulated (GPIO Target)</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION 1.4: CARRIER BATCH INVENTORY -->
-            <div class="cockpit-panel rounded-lg p-3 text-[10px] font-mono space-y-1 text-slate-400">
-                <div class="flex justify-between"><span class="text-slate-500">CARRIER:</span><span class="text-slate-200">STM32H743-AERO-FC (REV C)</span></div>
-                <div class="flex justify-between"><span class="text-slate-500">BARCODE S/N:</span><span class="text-slate-200">SN-7749-99120-K</span></div>
-                <div class="flex justify-between"><span class="text-slate-500">TARGET YIELD:</span><span class="text-emerald-400">99.40% [ACTUAL: 98.2%]</span></div>
-            </div>
-
-        </aside>
-
-
-        <!-- ========================================================================= -->
-        <!-- COLUMN 2: PRIMARY 3-CHANNEL MACRO INSPECTOR (Cols 5-12 | Center Stage)    -->
-        <!-- ========================================================================= -->
-        <section class="col-span-16 xl:col-span-8 flex flex-col space-y-3">
-            
-            <!-- VIEWPORT CONTROL TOOLBAR -->
-            <div class="cockpit-panel rounded-lg p-2.5 flex items-center justify-between text-xs font-mono">
-                <div class="flex items-center space-x-3">
-                    <span id="activeCamTitle" class="font-bold text-white tracking-wide">CAM-01: PRIMARY FLIGHT MCU (STM32H743)</span>
-                    <span id="activeCamRes" class="text-[10px] px-2 py-0.5 rounded bg-surfaceRaised border border-borderSubtle text-slate-400">2.7 um/px &middot; TELECENTRIC 1.0x</span>
-                </div>
-
-                <!-- Zoom Controls & Overlays -->
-                <div class="flex items-center space-x-2">
-                    <span class="text-[10px] text-slate-500">ZOOM:</span>
-                    <button onclick="setZoom(1.0)" id="zoom1x" class="px-2 py-0.5 rounded bg-surfaceRaised border border-borderSubtle text-slate-300 hover:text-white">1x</button>
-                    <button onclick="setZoom(2.0)" id="zoom2x" class="px-2 py-0.5 rounded bg-surfaceRaised border border-borderSubtle text-slate-300 hover:text-white">2x</button>
-                    <button onclick="setZoom(4.0)" id="zoom4x" class="px-2 py-0.5 rounded bg-surfaceRaised border border-borderSubtle text-sky-400 font-bold border-sky-400">4x</button>
-                    <button onclick="setZoom(12.0)" id="zoom12x" class="px-2 py-0.5 rounded bg-surfaceRaised border border-borderSubtle text-slate-300 hover:text-white">12x</button>
-                    
-                    <button onclick="toggleLiveWebcam()" id="btnWebcam" class="ml-2 px-2.5 py-0.5 rounded border border-borderSubtle bg-surfaceRaised hover:bg-surface text-slate-300 transition">
-                        LIVE WEBCAM
-                    </button>
-                </div>
-            </div>
-
-            <!-- PRIMARY RETICLE & CAD HOMOGRAPHY VIEWPORT -->
-            <div class="cockpit-panel rounded-lg relative overflow-hidden flex flex-col items-center justify-center min-h-[460px] bg-black">
-                
-                <!-- Coordinate & Reticle HUD Overlays -->
-                <div class="absolute top-3 left-3 z-20 flex flex-col space-y-1 font-mono text-[10px] pointer-events-none">
-                    <div class="px-2 py-1 rounded bg-obsidian/90 border border-borderSubtle text-slate-300 backdrop-blur">
-                        <span class="text-slate-500">CAD COORD:</span> <span id="hudCoords" class="text-sky-400 font-bold">X: 84.120 mm | Y: 43.850 mm</span>
-                    </div>
-                    <div id="hudBridgeAlert" class="px-2 py-1 rounded bg-red-950/90 border border-red-500/80 text-red-300 backdrop-blur font-bold flex items-center space-x-1.5">
-                        <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span>
-                        <span>IPC-A-610G DEFECT: PIN 48 &amp; 49 SOLDER BRIDGE (0.00mm)</span>
-                    </div>
-                </div>
-
-                <div class="absolute top-3 right-3 z-20 flex flex-col space-y-1 font-mono text-[10px] pointer-events-none text-right">
-                    <div class="px-2 py-1 rounded bg-obsidian/90 border border-borderSubtle text-slate-300 backdrop-blur">
-                        <span class="text-slate-500">OPTICAL HOMOGRAPHY:</span> <span class="text-emerald-400">H_LOCKED [1:1]</span>
-                    </div>
-                    <div class="px-2 py-1 rounded bg-obsidian/90 border border-borderSubtle text-slate-400 backdrop-blur">
-                        <span>CONFIDENCE: 99.84% (LLAMA 3.2-11B-VISION)</span>
-                    </div>
-                </div>
-
-                <!-- Main Inspection Canvas Render Area -->
-                <div id="viewportContainer" class="w-full h-[460px] relative flex items-center justify-center overflow-hidden">
-                    <canvas id="mainInspectorCanvas" width="960" height="540" class="max-w-full max-h-full object-contain cursor-crosshair"></canvas>
-                    <video id="liveWebcamVideo" autoplay playsinline muted class="hidden absolute inset-0 w-full h-full object-contain"></video>
-                </div>
-
-                <!-- Bottom Reticle Coordinate Strip -->
-                <div class="w-full bg-surfaceRaised border-t border-borderSubtle px-4 py-1.5 flex items-center justify-between text-[10px] font-mono text-slate-400">
-                    <div class="flex items-center space-x-4">
-                        <span>FOV: 14.2 x 10.8 mm</span>
-                        <span>GRID PITCH: 0.50 mm</span>
-                        <span>CLEARANCE SPEC: &gt;= 0.20 mm</span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-slate-500">INSPECTION LATENCY:</span>
-                        <span class="text-emerald-400 mono-num">184 ms</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FOCUSED INSPECTION CHANNEL RIG (3 ACTIVE CHANNELS + EXPANSION INDICATOR) -->
-            <div class="cockpit-panel rounded-lg p-3">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-semibold">INSPECTION RIG (3 ACTIVE ZONES + EXPANSION BUS)</span>
-                    <span class="text-[9px] font-mono text-slate-500">CLICK TO SWITCH ACTIVE SENSOR</span>
-                </div>
-
-                <div id="cameraGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                    <!-- Populated dynamically via JavaScript for CAM-01, CAM-02, CAM-03 -->
-                </div>
-
-                <div class="mt-2.5 pt-2 border-t border-borderSubtle flex items-center justify-between text-[9px] font-mono text-slate-500">
-                    <span>GIGE VISION BUS: CAM-04 (FPGA), CAM-05 (GATE DRIVER), CAM-06 (CAN FD) RESERVED</span>
-                    <span class="text-sky-400">EXPANSION READY</span>
-                </div>
-            </div>
-
-        </section>
-
-
-        <!-- ========================================================================= -->
-        <!-- COLUMN 3: FAULT ISOLATOR & ACTIONS (Cols 13-16 | Fixed 380px equivalent)  -->
-        <!-- ========================================================================= -->
-        <aside class="col-span-16 xl:col-span-4 flex flex-col space-y-3.5">
-            
-            <!-- SECTION 3.1: 180-SECOND COUNTDOWN FAILSAFE TIMER -->
-            <div id="timerCard" class="cockpit-panel rounded-lg p-3.5 border border-red-500/50 bg-red-500/10">
-                <div class="flex items-center justify-between border-b border-red-500/30 pb-2 mb-2">
-                    <span class="text-[11px] font-mono uppercase tracking-wider text-red-400 font-bold">FAILSAFE REVIEW TIMER</span>
-                    <span id="timerBadge" class="text-[9px] font-mono px-2 py-0.5 rounded bg-red-500/30 text-red-300 font-bold animate-pulse">ACTION REQUIRED</span>
-                </div>
-
-                <!-- Digital Stopwatch MM:SS.mmm -->
-                <div class="py-2 text-center">
-                    <div id="countdownDisplay" class="mono-num text-3xl font-extrabold tracking-tight text-white font-mono">
-                        02:59.999
-                    </div>
-                    <p class="text-[10px] font-mono text-slate-400 mt-1">
-                        Unclaimed timeout triggers <span class="text-red-400 font-bold">AUTO-QUARANTINE BIN</span> in 180s.
-                    </p>
-                </div>
-
-                <!-- Animated Millisecond Progress Bar -->
-                <div class="w-full bg-obsidian rounded-full h-2 border border-borderSubtle overflow-hidden mt-1">
-                    <div id="timerProgressBar" class="h-full bg-red-500 transition-all duration-75" style="width: 100%;"></div>
-                </div>
-
-                <!-- Technician Claim Ticket Button -->
-                <div class="mt-3">
-                    <button onclick="claimTicket()" id="btnClaimTicket" class="w-full py-2 px-3 rounded bg-red-600 hover:bg-red-500 text-white font-mono text-xs font-bold transition flex items-center justify-center space-x-2 shadow-lg">
-                        <span>ACCEPT &amp; CLAIM TICKET (F1)</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- SECTION 3.2: GUIDED REWORK SOP CHECKLIST (IPC-A-610G CLASS 3) -->
-            <div class="cockpit-panel rounded-lg p-3.5">
-                <div class="flex items-center justify-between border-b border-borderSubtle pb-2 mb-2.5">
-                    <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-semibold">3.2 IPC-A-610G REWORK SOP</span>
-                    <span id="sopStatusBadge" class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-surfaceRaised border border-borderSubtle text-slate-400">PENDING AUDIT</span>
-                </div>
-
-                <div class="space-y-2 text-xs font-mono">
-                    <label class="flex items-start space-x-2.5 p-1.5 rounded hover:bg-surfaceRaised cursor-pointer">
-                        <input type="checkbox" id="step1" onchange="toggleStep('step1_flux')" class="mt-0.5 rounded border-borderSubtle bg-obsidian text-emerald-500">
-                        <span class="text-[11px] text-slate-300">1. Apply Kester 959T No-Clean RMA flux to Pins 46-52</span>
-                    </label>
-                    <label class="flex items-start space-x-2.5 p-1.5 rounded hover:bg-surfaceRaised cursor-pointer">
-                        <input type="checkbox" id="step2" onchange="toggleStep('step2_temperature')" class="mt-0.5 rounded border-borderSubtle bg-obsidian text-emerald-500">
-                        <span class="text-[11px] text-slate-300">2. Set micro-chisel soldering iron to 340°C</span>
-                    </label>
-                    <label class="flex items-start space-x-2.5 p-1.5 rounded hover:bg-surfaceRaised cursor-pointer">
-                        <input type="checkbox" id="step3" onchange="toggleStep('step3_wick_sweep')" class="mt-0.5 rounded border-borderSubtle bg-obsidian text-emerald-500">
-                        <span class="text-[11px] text-slate-300">3. 0.8mm desolder braid sweep Pin 49 -&gt; Pin 48 (&lt;2.0s)</span>
-                    </label>
-                    <label class="flex items-start space-x-2.5 p-1.5 rounded hover:bg-surfaceRaised cursor-pointer">
-                        <input type="checkbox" id="step4" onchange="toggleStep('step4_ipa_clean')" class="mt-0.5 rounded border-borderSubtle bg-obsidian text-emerald-500">
-                        <span class="text-[11px] text-slate-300">4. Ultrasonic wash with 99% Isopropyl Alcohol</span>
-                    </label>
-                    <label class="flex items-start space-x-2.5 p-1.5 rounded hover:bg-surfaceRaised cursor-pointer">
-                        <input type="checkbox" id="step5" onchange="toggleStep('step5_clearance_verify')" class="mt-0.5 rounded border-borderSubtle bg-obsidian text-emerald-500">
-                        <span class="text-[11px] text-slate-300">5. Optical clearance verified &gt; 0.20 mm</span>
-                    </label>
-                </div>
-
-                <!-- Primary Operational Action Buttons -->
-                <div class="mt-3.5 space-y-2 pt-2 border-t border-borderSubtle">
-                    <button onclick="verifyReworkAndReset()" id="btnResetPower" class="w-full py-2 px-3 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold transition flex items-center justify-center space-x-2 shadow-lg">
-                        <span>VERIFY REWORK &amp; RESTORE POWER (F2)</span>
-                    </button>
-                    
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="routeAutoDesolder()" class="py-1.5 px-2 rounded bg-surfaceRaised hover:bg-surface border border-borderSubtle text-slate-300 font-mono text-[10px] transition">
-                            ROBOTIC DESOLDER (F3)
-                        </button>
-                        <button onclick="quarantineDut()" class="py-1.5 px-2 rounded bg-red-950/40 hover:bg-red-950/60 border border-red-500/40 text-red-300 font-mono text-[10px] transition">
-                            QUARANTINE BIN (F4)
-                        </button>
-                    </div>
-
-                    <button onclick="openIncidentReportModal()" class="w-full py-1.5 px-3 rounded bg-sky-950/40 hover:bg-sky-900/50 border border-sky-500/50 text-sky-300 font-mono text-xs transition flex items-center justify-center space-x-2">
-                        <span>EXPORT ROOT-CAUSE REPORT (F5)</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- SECTION 3.3: META FOUNDATION MODEL REASONING ENGINE -->
-            <div class="cockpit-panel rounded-lg p-3.5 flex-1 flex flex-col">
-                <div class="flex items-center justify-between border-b border-borderSubtle pb-2 mb-2">
-                    <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-semibold">3.3 META VISION MODEL REASONING FEED</span>
-                    <span class="text-[9px] font-mono text-sky-400">LLAMA 3.2-11B-VISION &middot; SAM 2.1</span>
-                </div>
-
-                <div id="metaReasoningFeed" class="flex-1 min-h-[140px] max-h-[190px] overflow-y-auto text-[10px] font-mono text-slate-300 p-2 rounded bg-obsidian border border-borderSubtle space-y-1.5">
-                    <div class="text-sky-400 font-bold">[LLAMA-3.2-11B-VISION &middot; SAM 2.1]: Spatial clearance audit active.</div>
-                    <div class="text-slate-400">&gt; Loading calibrated CAD netlist (spec_clearance = 0.20mm).</div>
-                    <div class="text-red-400 font-semibold">&gt; CRITICAL FAULT: Detected solder bridge Pin 48 -&gt; Pin 49 on U14.</div>
-                    <div class="text-slate-400">&gt; Measured clearance: 0.00 mm (Direct low-impedance short).</div>
-                    <div class="text-emerald-400">&gt; FastMCP tool call: trigger_pre_power_interlock(ref_des='U14', latency_ms=3.18).</div>
-                    <div class="text-slate-400">&gt; 24V Power Bus clamped to 0.00V. Silicon damage averted.</div>
-                </div>
-                
-                <div class="mt-2 flex justify-between items-center text-[9px] font-mono text-slate-500">
-                    <span>ARCHITECTURE: MULTI-MODAL VISION-LANGUAGE</span>
-                    <span>API CREDITS: ACTIVE</span>
-                </div>
-            </div>
-
-        </aside>
-
-    </main>
-
-    <!-- INCIDENT REPORT MODAL -->
-    <div id="reportModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="cockpit-panel rounded-xl max-w-3xl w-full max-h-[85vh] flex flex-col border border-borderSubtle shadow-2xl">
-            <div class="px-5 py-3 border-b border-borderSubtle flex items-center justify-between">
-                <div>
-                    <h3 class="text-sm font-mono font-bold text-white uppercase tracking-wider">ROOT-CAUSE ENGINEERING INCIDENT REPORT</h3>
-                    <p class="text-[10px] font-mono text-slate-400">IPC-A-610G Class 3 Compliance Record &middot; Traceable Audit Log</p>
-                </div>
-                <button onclick="closeIncidentReportModal()" class="text-slate-400 hover:text-white font-mono text-lg font-bold">&times;</button>
-            </div>
-            
-            <div class="p-5 overflow-y-auto flex-1 font-mono text-xs text-slate-300 space-y-4">
-                <pre id="reportModalContent" class="p-4 rounded bg-obsidian border border-borderSubtle whitespace-pre-wrap text-[11px] leading-relaxed text-slate-200"></pre>
-            </div>
-
-            <div class="px-5 py-3 border-t border-borderSubtle flex items-center justify-between bg-surfaceRaised">
-                <span id="modalHashDisplay" class="text-[10px] font-mono text-slate-400">TAMPER-EVIDENT SHA-256 DIGEST: CALCULATING...</span>
-                <div class="flex items-center space-x-3">
-                    <button onclick="closeIncidentReportModal()" class="px-3 py-1.5 rounded border border-borderSubtle text-slate-400 hover:text-white font-mono text-xs">
-                        CLOSE
-                    </button>
-                    <a id="btnDownloadReport" href="/api/export_incident_report" download class="px-4 py-1.5 rounded bg-sky-600 hover:bg-sky-500 text-white font-mono text-xs font-bold transition">
-                        DOWNLOAD INCIDENT REPORT (.MD)
-                    </a>
-                </div>
+        <div class="image-card">
+            <img src="/static/board_inspection_clean.jpg" alt="After Rework Clean Fillets">
+            <div class="image-caption">
+                <span>AFTER: Clean Joint Fillet</span>
+                <span class="badge-nominal">0.24mm CLEARANCE PASS</span>
             </div>
         </div>
     </div>
 
-    <!-- CLIENT OPERATIONAL JAVASCRIPT -->
-    <script>
-        let currentSystemState = "INTERLOCK_ENGAGED";
-        let activeCamId = "CAM-01";
-        let countdownSeconds = 180.0;
-        let countdownInterval = null;
-        let isAudioAlertActive = true;
-        let audioContext = null;
-        let currentZoom = 4.0;
-        let channelsData = [];
-        let macroImage = new Image();
-        let faultImage = new Image();
-        let nominalImage = new Image();
-        let isWebcamRunning = false;
+    <div class="section-title">3. Verified Meta Vision Reasoning Diagnosis</div>
+    <div class="quote-box">
+        "{SYSTEM_STATE['meta_diagnosis']}"
+        <div style="margin-top: 6px; font-size: 7.5pt; font-family: 'JetBrains Mono', monospace; color: #7F1D1D; font-style: normal;">
+            &mdash; Meta Multimodal Vision Engine (Model: muse-spark-1.3 / Llama 3.2-Vision)
+        </div>
+    </div>
 
-        macroImage.src = "/static/board_inspection_macro.jpg";
-        faultImage.src = "/static/robotics_cell_fault.jpg";
-        nominalImage.src = "/static/robotics_cell_nominal.jpg";
+    <div class="section-title">4. High-Speed Telemetry Snapshot at Interlock Trip</div>
+    <table class="telemetry-table">
+        <thead>
+            <tr>
+                <th>Telemetry Parameter</th>
+                <th>Trip Value</th>
+                <th>Nominal Range</th>
+                <th>Unit</th>
+                <th>Interlock Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Primary DC Bus Voltage (V_main)</td>
+                <td><strong>0.00 V</strong></td>
+                <td>24.00 V &plusmn; 0.5V</td>
+                <td>Volts</td>
+                <td style="color:#DC2626; font-weight:700;">LATCHED OFF (&lt; 3.2ms)</td>
+            </tr>
+            <tr>
+                <td>High-Side Shunt Surge Current (I_peak)</td>
+                <td><strong>14.82 A</strong></td>
+                <td>4.20 A &plusmn; 0.3A</td>
+                <td>Amperes</td>
+                <td style="color:#DC2626; font-weight:700;">TRIPPED OVER-CURRENT</td>
+            </tr>
+            <tr>
+                <td>MCU Peak Junction Temperature</td>
+                <td><strong>104.2 &deg;C</strong></td>
+                <td>35.0 &ndash; 65.0 &deg;C</td>
+                <td>Celsius</td>
+                <td style="color:#DC2626; font-weight:700;">THERMAL SURGE MITIGATED</td>
+            </tr>
+            <tr>
+                <td>Acoustic Resonance Peak</td>
+                <td><strong>18.4 kHz</strong></td>
+                <td>&lt; 2.5 kHz</td>
+                <td>Kilohertz</td>
+                <td style="color:#D97706; font-weight:600;">MICRO-ARC DETECTED</td>
+            </tr>
+            <tr>
+                <td>Galvanic Contactor Trip Latency</td>
+                <td><strong>3.18 ms</strong></td>
+                <td>&lt; 5.00 ms</td>
+                <td>Milliseconds</td>
+                <td style="color:#16A34A; font-weight:700;">SPECIFICATION COMPLIANT</td>
+            </tr>
+        </tbody>
+    </table>
 
-        window.addEventListener("DOMContentLoaded", async () => {
-            initSparkline();
-            await fetchTelemetry();
-            startCountdown();
-            setupKeyboardShortcuts();
-            setInterval(fetchTelemetry, 2500);
-            renderInspectionCanvas();
-        });
+    <div class="section-title">5. Certified Rework Procedure Performed</div>
+    <ul class="procedure-list">
+        <li><strong>Step 1:</strong> Kester 959T No-Clean RMA flux applied across Pin 46 to Pin 52.</li>
+        <li><strong>Step 2:</strong> Micro-soldering iron calibrated to 340&deg;C with 0.8mm chisel tip.</li>
+        <li><strong>Step 3:</strong> Solder wick capillary extraction sweep from Pin 49 to Pin 48 (dwell &lt; 2.0s).</li>
+        <li><strong>Step 4:</strong> Post-rework ultrasonic wash with 99% Isopropyl Alcohol.</li>
+        <li><strong>Step 5:</strong> Re-verified optical clearance &ge; 0.20 mm. Bus power restoral authorized.</li>
+    </ul>
 
-        // 180-Second Countdown Failsafe Loop
-        function startCountdown() {
-            if (countdownInterval) clearInterval(countdownInterval);
-            const startTime = Date.now();
-            const totalDuration = countdownSeconds * 1000;
+    <div class="signature-block">
+        <div>
+            <div><strong>LEAD INSPECTOR / OPERATOR:</strong></div>
+            <div class="sig-line">OP-4821 &middot; Lead Avionics SMT Technician</div>
+        </div>
+        <div>
+            <div><strong>QUALITY SYSTEM APPROVAL:</strong></div>
+            <div class="sig-line">IPC-A-610G Certified QA Engineering Lead</div>
+        </div>
+    </div>
 
-            countdownInterval = setInterval(() => {
-                if (currentSystemState === "CLAIMED_REWORK" || currentSystemState === "REWORK_CERTIFIED_PASS") {
-                    return;
-                }
+    <div class="footer">
+        <span>OMNIINSPECT AI &middot; CYBER-PHYSICAL PRE-POWER GATE</span>
+        <span>STANDARDS REFERENCE: IPC-A-610G CLASS 3 &middot; J-STD-001</span>
+    </div>
+</body>
+</html>
+"""
+    return HTMLResponse(content=report_html)
 
-                const elapsed = Date.now() - startTime;
-                const remaining = Math.max(0, totalDuration - elapsed);
-                countdownSeconds = remaining / 1000;
 
-                const minutes = Math.floor(remaining / 60000);
-                const seconds = Math.floor((remaining % 60000) / 1000);
-                const millis = Math.floor(remaining % 1000);
-
-                const displayStr = 
-                    String(minutes).padStart(2, '0') + ":" + 
-                    String(seconds).padStart(2, '0') + "." + 
-                    String(millis).padStart(3, '0');
-
-                const displayEl = document.getElementById("countdownDisplay");
-                if (displayEl) displayEl.innerText = displayStr;
-
-                const progressPct = (remaining / totalDuration) * 100;
-                const barEl = document.getElementById("timerProgressBar");
-                if (barEl) barEl.style.width = progressPct + "%";
-
-                if (remaining <= 0) {
-                    clearInterval(countdownInterval);
-                    autoQuarantineDUT();
-                }
-            }, 30);
+@app.get("/", response_class=HTMLResponse)
+async def serve_dashboard_v8():
+    html_content = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniInspect AI — Pre-Power Safety Gate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-base: #060810;
+            --panel-bg: rgba(255, 255, 255, 0.06);
+            --panel-border: rgba(255, 255, 255, 0.12);
+            --panel-blur: blur(24px);
+            --color-fault: #FF3B30;
+            --color-clear: #30D158;
+            --color-warn: #FFD60A;
+            --text-primary: rgba(255, 255, 255, 0.92);
+            --text-secondary: rgba(255, 255, 255, 0.45);
         }
 
-        // Web Audio API ISO 7731 Industrial Tone Generator
-        function playWarningBeep() {
-            if (!isAudioAlertActive) return;
-            try {
-                if (!audioContext) {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                const osc = audioContext.createOscillator();
-                const gain = audioContext.createGain();
-                osc.type = "sine";
-                osc.frequency.setValueAtTime(980, audioContext.currentTime);
-                gain.gain.setValueAtTime(0.04, audioContext.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
-                osc.connect(gain);
-                gain.connect(audioContext.destination);
-                osc.start();
-                osc.stop(audioContext.currentTime + 0.15);
-            } catch (e) {
-                // User hasn't interacted with audio yet
-            }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        function toggleAudioAlert() {
-            isAudioAlertActive = !isAudioAlertActive;
-            const btn = document.getElementById("btnAudioMute");
-            btn.innerText = isAudioAlertActive ? "AUDIO ALARM: [ENGAGED]" : "AUDIO ALARM: [MUTED]";
-            btn.classList.toggle("text-red-400", isAudioAlertActive);
-            btn.classList.toggle("text-slate-400", !isAudioAlertActive);
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 300;
+            min-height: 100vh;
+            width: 100vw;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
         }
 
-        async function fetchTelemetry() {
-            try {
-                const res = await fetch("/api/telemetry");
-                const data = await res.json();
-                channelsData = data.channels || [];
-                currentSystemState = data.system_state;
-
-                updateTelemetryUI(data);
-                renderCameraGrid();
-                renderInspectionCanvas();
-
-                if (currentSystemState === "INTERLOCK_ENGAGED") {
-                    playWarningBeep();
-                }
-            } catch (err) {
-                console.error("Telemetry sync error:", err);
-            }
+        /* Fixed Full-Viewport Background with Cinematic PCB Macro */
+        .fixed-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(6, 8, 16, 0.60), rgba(6, 8, 16, 0.72)), 
+                        url('/static/cinematic_pcb_bg.jpg') center/cover no-repeat fixed;
+            z-index: 0;
+            pointer-events: none;
         }
 
-        function updateTelemetryUI(data) {
-            document.getElementById("valVMain").innerText = data.v_main.toFixed(2) + " V";
-            document.getElementById("valISense").innerText = data.i_sense > 0 ? (data.i_sense.toFixed(3) + " A") : (data.i_sense.toFixed(2) + " mA");
-            document.getElementById("valVMCU").innerText = data.v_mcu_3v3.toFixed(2) + " V";
-            document.getElementById("valVCore").innerText = data.v_core.toFixed(2) + " V";
-
-            document.getElementById("valPeakTemp").innerText = data.flir_peak_temp.toFixed(1) + " °C";
-            document.getElementById("valGradientRate").innerText = data.flir_gradient_rate;
-            document.getElementById("valAcoustic").innerText = data.acoustic_resonance;
-
-            const isFault = data.system_state === "INTERLOCK_ENGAGED";
-            const isClaimed = data.system_state === "CLAIMED_REWORK";
-            const isPass = data.system_state === "REWORK_CERTIFIED_PASS";
-
-            const topPill = document.getElementById("topInterlockPill");
-            const topText = document.getElementById("topInterlockText");
-            const timerBadge = document.getElementById("timerBadge");
-            const railStatus = document.getElementById("railPwrStatusBadge");
-
-            if (isFault) {
-                topPill.className = "px-4 py-1.5 rounded border border-red-500/80 bg-red-500/15 text-red-400 font-mono text-xs font-bold flex items-center space-x-2 pulse-interlock-active";
-                topText.innerText = "PRE-POWER INTERLOCK: POWER CUTOFF (<3.2ms)";
-                timerBadge.innerText = "ACTION REQUIRED";
-                timerBadge.className = "text-[9px] font-mono px-2 py-0.5 rounded bg-red-500/30 text-red-300 font-bold animate-pulse";
-                railStatus.innerText = "LATCHED OFF";
-                railStatus.className = "text-[9px] font-mono px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/40 font-bold";
-            } else if (isClaimed) {
-                topPill.className = "px-4 py-1.5 rounded border border-amber-500/80 bg-amber-500/15 text-amber-400 font-mono text-xs font-bold flex items-center space-x-2";
-                topText.innerText = "INTERLOCK CLAIMED: OPERATOR REWORK IN PROGRESS";
-                timerBadge.innerText = "COUNTDOWN PAUSED";
-                timerBadge.className = "text-[9px] font-mono px-2 py-0.5 rounded bg-amber-500/30 text-amber-300 font-bold";
-                railStatus.innerText = "ISOLATED FOR REWORK";
-                railStatus.className = "text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 font-bold";
-            } else if (isPass) {
-                topPill.className = "px-4 py-1.5 rounded border border-emerald-500/80 bg-emerald-500/15 text-emerald-400 font-mono text-xs font-bold flex items-center space-x-2";
-                topText.innerText = "PRE-POWER INTERLOCK: 24V BUS ARMED & ENERGIZED";
-                timerBadge.innerText = "REWORK CERTIFIED";
-                timerBadge.className = "text-[9px] font-mono px-2 py-0.5 rounded bg-emerald-500/30 text-emerald-300 font-bold";
-                railStatus.innerText = "ACTIVE POWER NOMINAL";
-                railStatus.className = "text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold";
-                
-                document.getElementById("valVMain").className = "mono-num text-sm font-bold text-emerald-400";
-                document.getElementById("valISense").className = "mono-num text-sm font-bold text-emerald-400";
-                document.getElementById("valVMCU").className = "mono-num text-sm font-bold text-emerald-400";
-                document.getElementById("valPeakTemp").className = "mono-num text-base font-bold text-emerald-400";
-                document.getElementById("hudBridgeAlert").classList.add("hidden");
-            }
+        /* Glassmorphism Panel Primitive */
+        .glass-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            backdrop-filter: var(--panel-blur);
+            -webkit-backdrop-filter: var(--panel-blur);
+            border-radius: 16px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                        border-color 0.4s ease, 
+                        box-shadow 0.4s ease;
+        }
+        .glass-panel:hover {
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.75);
         }
 
-        // Render 3 Active Inspection Zones
-        function renderCameraGrid() {
-            const grid = document.getElementById("cameraGrid");
-            if (!grid || !channelsData.length) return;
+        /* Typography */
+        .mono-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-feature-settings: "tnum" on, "zero" on;
+            letter-spacing: -0.02em;
+        }
+        .label-caps {
+            font-family: 'Inter', sans-serif;
+            font-size: 10px;
+            font-weight: 400;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
 
-            grid.innerHTML = "";
-            const activeChannels = channelsData.slice(0, 3);
+        /* Top Header Strip */
+        header {
+            position: relative;
+            z-index: 10;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .brand-cluster {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .brand-logo-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 11px;
+            color: #FFF;
+        }
+        .brand-title {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #FFF;
+        }
+        .brand-subtitle {
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+        }
 
-            activeChannels.forEach(ch => {
-                const isActive = ch.id === activeCamId;
-                const isFault = ch.status === "CRITICAL_FAULT";
-                
-                const card = document.createElement("div");
-                card.onclick = () => selectCamera(ch.id);
-                card.className = `p-2.5 rounded cursor-pointer border transition ${
-                    isActive ? "camera-card-active border-sky-400 bg-sky-950/20" : "cockpit-panel border-borderSubtle hover:border-slate-500"
-                }`;
+        .state-beacon {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .beacon-fault {
+            background: rgba(255, 59, 48, 0.15);
+            border: 1px solid rgba(255, 59, 48, 0.45);
+            color: var(--color-fault);
+            animation: pulse-border 2s infinite;
+        }
+        .beacon-clear {
+            background: rgba(48, 209, 88, 0.15);
+            border: 1px solid rgba(48, 209, 88, 0.45);
+            color: var(--color-clear);
+        }
+        .beacon-inspect {
+            background: rgba(255, 214, 10, 0.15);
+            border: 1px solid rgba(255, 214, 10, 0.45);
+            color: var(--color-warn);
+        }
 
-                card.innerHTML = `
-                    <div class="flex items-center justify-between text-[11px] font-mono mb-1">
-                        <span class="font-bold ${isActive ? 'text-sky-300' : 'text-slate-200'}">${ch.id}</span>
-                        <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${
-                            isFault ? 'bg-red-500/20 text-red-400 border border-red-500/40' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                        }">${isFault ? 'FAULT DETECTED' : 'NOMINAL'}</span>
+        @keyframes pulse-border {
+            0%, 100% { border-color: rgba(255, 59, 48, 0.35); box-shadow: 0 0 15px rgba(255, 59, 48, 0.15); }
+            50% { border-color: rgba(255, 59, 48, 0.85); box-shadow: 0 0 30px rgba(255, 59, 48, 0.35); }
+        }
+
+        /* View State Container */
+        main {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 40px 30px;
+        }
+
+        .view-screen {
+            width: 100%;
+            max-width: 1440px;
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+        }
+        .view-hidden {
+            display: none !important;
+            opacity: 0;
+            transform: scale(0.98);
+        }
+
+        /* STATE 1: INSPECTION ACTIVE (Single Centered Panel 70% Width) */
+        .inspection-wrapper {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        .viewport-frame {
+            position: relative;
+            width: 100%;
+            height: 480px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+        }
+        .viewport-frame img, .viewport-frame video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        /* CAD 1px Reticle Overlay */
+        .reticle-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .reticle-line-h {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.35);
+        }
+        .reticle-line-v {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 1px;
+            background: rgba(255, 255, 255, 0.35);
+        }
+        .reticle-box {
+            width: 80px;
+            height: 80px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            position: relative;
+        }
+        .reticle-box::after {
+            content: "";
+            position: absolute;
+            inset: -4px;
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+        }
+
+        .inspection-strip {
+            margin-top: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        /* STATE 2 & 3: TWO-PANEL SPLIT (Side by Side) */
+        .split-layout {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 28px;
+            align-items: stretch;
+        }
+
+        /* Left Image Panel */
+        .image-panel {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .image-container {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: opacity 0.4s ease;
+        }
+        /* Bounding Box on Defect */
+        .bbox-fault {
+            position: absolute;
+            top: 42%;
+            left: 48%;
+            width: 90px;
+            height: 60px;
+            border: 2px solid var(--color-fault);
+            box-shadow: 0 0 20px rgba(255, 59, 48, 0.5);
+            pointer-events: none;
+        }
+        .bbox-nominal {
+            position: absolute;
+            top: 42%;
+            left: 48%;
+            width: 90px;
+            height: 60px;
+            border: 2px solid var(--color-clear);
+            box-shadow: 0 0 20px rgba(48, 209, 88, 0.5);
+            pointer-events: none;
+        }
+
+        .image-status-bar {
+            margin-top: 18px;
+        }
+        .status-header-text {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            margin-bottom: 6px;
+        }
+        .diagnosis-quote {
+            font-size: 12px;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 12px;
+        }
+        .pill-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        /* Right Telemetry Panel (5 Metric Cards) */
+        .telemetry-panel {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .cards-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .metric-card {
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s ease;
+        }
+        .card-fault {
+            border-left: 4px solid var(--color-fault);
+        }
+        .card-clear {
+            border-left: 4px solid var(--color-clear);
+        }
+
+        .metric-val-large {
+            font-size: 26px;
+            font-weight: 700;
+        }
+        .metric-sub {
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+        .status-pill-small {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        /* Countdown Timer Ring Card */
+        .timer-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .timer-digits {
+            font-size: 28px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: -0.03em;
+        }
+
+        /* Bottom Action Bar */
+        .action-bar {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 14px;
+        }
+        .btn-action {
+            padding: 11px 22px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary-fault {
+            background: var(--color-fault);
+            color: #FFF;
+            box-shadow: 0 4px 20px rgba(255, 59, 48, 0.4);
+        }
+        .btn-primary-fault:hover {
+            background: #E03126;
+            transform: translateY(-1px);
+        }
+        .btn-primary-clear {
+            background: var(--color-clear);
+            color: #060810;
+            font-weight: 700;
+            box-shadow: 0 4px 20px rgba(48, 209, 88, 0.4);
+        }
+        .btn-primary-clear:hover {
+            background: #28B84D;
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: rgba(255, 255, 255, 0.85);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.14);
+            color: #FFF;
+        }
+
+        /* Footnote */
+        .footnote-strip {
+            position: relative;
+            z-index: 10;
+            padding: 12px 40px;
+            display: flex;
+            justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.35);
+        }
+    </style>
+</head>
+<body>
+    <div class="fixed-bg"></div>
+
+    <!-- Top Header -->
+    <header>
+        <div class="brand-cluster">
+            <div class="brand-logo-icon">OI</div>
+            <div>
+                <div class="brand-title">OmniInspect AI</div>
+                <div class="brand-subtitle">Pre-Power Optical Safety Gate &middot; STM32H743-AERO-FC</div>
+            </div>
+        </div>
+
+        <div id="topStateBeacon" class="state-beacon beacon-fault">
+            <span id="beaconDot" style="width:6px; height:6px; border-radius:50%; background:currentColor;"></span>
+            <span id="beaconText">STATE 2: FAULT DETECTED</span>
+        </div>
+    </header>
+
+    <!-- Main Views Container (State Machine: Exactly One State Shown at a Time) -->
+    <main>
+
+        <!-- ==================================================================== -->
+        <!-- STATE 1: INSPECTION ACTIVE (One large glassmorphism panel)           -->
+        <!-- ==================================================================== -->
+        <div id="viewState1" class="view-screen inspection-wrapper view-hidden">
+            <div class="glass-panel" style="padding: 24px;">
+                <div class="viewport-frame">
+                    <img id="state1Image" src="/static/board_inspection_macro.jpg" alt="Active PCBA Inspection">
+                    <video id="webcamStream" autoplay playsinline muted style="display:none; width:100%; height:100%; object-fit:cover;"></video>
+                    
+                    <!-- 1px Thin CAD Reticle Overlay -->
+                    <div class="reticle-overlay">
+                        <div class="reticle-line-h"></div>
+                        <div class="reticle-line-v"></div>
+                        <div class="reticle-box"></div>
                     </div>
-                    <div class="text-[10px] font-mono text-slate-300 font-semibold truncate">${ch.name}</div>
-                    <div class="text-[9px] font-mono text-slate-500 mt-0.5">${ch.resolution}</div>
-                `;
-                grid.appendChild(card);
-            });
+                </div>
+
+                <div class="inspection-strip">
+                    <div style="color:#FFF;"><strong>BOARD ID:</strong> <span id="s1BoardId">AERO-FC-0042</span></div>
+                    <div style="color:var(--color-warn);"><strong>STATUS:</strong> SCANNING &amp; HOMOGRAPHY ALIGNMENT</div>
+                    <div style="color:var(--text-secondary);"><strong>ELAPSED:</strong> <span id="s1Elapsed">00:04.2s</span></div>
+                    <button onclick="toggleWebcam()" class="btn-secondary" style="padding:4px 10px; border-radius:4px; font-size:9px; cursor:pointer;">
+                        TOGGLE WEBCAM
+                    </button>
+                </div>
+
+                <div style="margin-top: 18px; display:flex; justify-content:flex-end;">
+                    <button onclick="transitionToState('fault')" class="btn-action btn-primary-fault">
+                        SIMULATE DETECTION ANOMALY &rarr;
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ==================================================================== -->
+        <!-- STATE 2: FAULT DETECTED (Two-panel split: Before Image + 5 Cards)    -->
+        <!-- ==================================================================== -->
+        <div id="viewState2" class="view-screen">
+            <div class="split-layout">
+                
+                <!-- Left Panel: Before Image with Red Solder Bridge BBox -->
+                <div class="glass-panel image-panel" style="border-color: rgba(255, 59, 48, 0.35);">
+                    <div>
+                        <div class="image-container">
+                            <img src="/static/board_inspection_macro.jpg" alt="Fault Detected Board">
+                            <div class="bbox-fault"></div>
+                        </div>
+
+                        <div class="image-status-bar">
+                            <div class="label-caps" style="color: var(--color-fault); margin-bottom: 4px;">ANOMALY LOCALIZED &middot; PIN 48-49</div>
+                            <div class="status-header-text" style="color: var(--color-fault);">FAULT DETECTED: SOLDER BRIDGE</div>
+                            <p class="diagnosis-quote" id="metaDiagnosisText">
+                                "Yes, there is a clear solder bridge on the front row of the MCU, where multiple center pins are shorted by a large blob of excess solder. This defect fails IPC-A-610G Class 3 criteria and needs rework."
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                        <span class="pill-badge" style="background:rgba(255,59,48,0.18); border:1px solid rgba(255,59,48,0.45); color:var(--color-fault);">
+                            IPC-A-610G CLASS 3 VIOLATION
+                        </span>
+                        <span class="label-caps">MUSE-SPARK-1.3 &middot; 895 REASONING TOKENS</span>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Sensor Telemetry (5 Cards as specified in brief) -->
+                <div class="glass-panel telemetry-panel" style="border-color: rgba(255, 59, 48, 0.25);">
+                    <div class="cards-column">
+                        
+                        <!-- Card 1: POWER BUS -->
+                        <div class="metric-card card-fault">
+                            <div>
+                                <div class="label-caps">24V POWER BUS</div>
+                                <div class="mono-num metric-val-large" style="color:var(--color-fault);" id="card1Val">0.00 V</div>
+                                <div class="metric-sub" id="card1Sub">24V RAIL &mdash; LATCHED OFF</div>
+                            </div>
+                            <span class="status-pill-small" style="background:rgba(255,59,48,0.2); color:var(--color-fault);">
+                                CLAMPED
+                            </span>
+                        </div>
+
+                        <!-- Card 2: PEAK CURRENT -->
+                        <div class="metric-card card-fault">
+                            <div>
+                                <div class="label-caps">PEAK CURRENT</div>
+                                <div class="mono-num metric-val-large" style="color:var(--color-fault);" id="card2Val">14.82 A</div>
+                                <div class="metric-sub">SURGE DETECTED &middot; SHORT EVENT</div>
+                            </div>
+                            <span class="status-pill-small" style="background:rgba(255,59,48,0.2); color:var(--color-fault);">
+                                &gt; 4.5A LIMIT
+                            </span>
+                        </div>
+
+                        <!-- Card 3: JUNCTION TEMP -->
+                        <div class="metric-card card-fault">
+                            <div>
+                                <div class="label-caps">MCU JUNCTION TEMP</div>
+                                <div class="mono-num metric-val-large" style="color:var(--color-fault);" id="card3Val">104.2 &deg;C</div>
+                                <div class="metric-sub">MCU THERMAL READING (OVERRUN)</div>
+                            </div>
+                            <span class="status-pill-small" style="background:rgba(255,59,48,0.2); color:var(--color-fault);">
+                                RED ZONE
+                            </span>
+                        </div>
+
+                        <!-- Card 4: CONTACTOR TRIP -->
+                        <div class="metric-card card-fault">
+                            <div>
+                                <div class="label-caps">CONTACTOR TRIP TIME</div>
+                                <div class="mono-num metric-val-large" style="color:#FFF;">3.18 ms</div>
+                                <div class="metric-sub">INTERLOCK RESPONSE TIME</div>
+                            </div>
+                            <span class="status-pill-small" style="background:rgba(48,209,88,0.2); color:var(--color-clear);">
+                                &lt; 5ms SPEC &#10003;
+                            </span>
+                        </div>
+
+                        <!-- Card 5: FAILSAFE TIMER -->
+                        <div class="metric-card card-fault timer-card">
+                            <div>
+                                <div class="label-caps" style="color:var(--color-warn);">FAILSAFE REVIEW TIMER</div>
+                                <div class="timer-digits" style="color:#FFF;" id="countdownDisplay">02:47.3</div>
+                                <div class="metric-sub">CLAIM OR AUTO-QUARANTINE</div>
+                            </div>
+                            <svg width="44" height="44" viewBox="0 0 44 44">
+                                <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="3"/>
+                                <circle id="timerCircle" cx="22" cy="22" r="18" fill="none" stroke="var(--color-warn)" stroke-width="3" 
+                                        stroke-dasharray="113.1" stroke-dashoffset="20" stroke-linecap="round"
+                                        transform="rotate(-90 22 22)" style="transition: stroke-dashoffset 0.1s linear;"/>
+                            </svg>
+                        </div>
+
+                    </div>
+
+                    <!-- Bottom Bar: Three Action Buttons -->
+                    <div class="action-bar">
+                        <button onclick="claimTicket()" id="btnClaim" class="btn-action btn-secondary">
+                            [F1 &mdash; CLAIM TICKET]
+                        </button>
+                        <button onclick="transitionToState('nominal')" class="btn-action btn-primary-clear">
+                            [F2 &mdash; VERIFY REWORK]
+                        </button>
+                        <button onclick="forceQuarantine()" class="btn-action btn-secondary" style="color:var(--color-fault);">
+                            [FORCE QUARANTINE]
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- ==================================================================== -->
+        <!-- STATE 3: CLEARED — POWER AUTHORIZED (Transformed to Green)          -->
+        <!-- ==================================================================== -->
+        <div id="viewState3" class="view-screen view-hidden">
+            <div class="split-layout">
+                
+                <!-- Left Panel: After Image with Green Rework Verification -->
+                <div class="glass-panel image-panel" style="border-color: rgba(48, 209, 88, 0.35);">
+                    <div>
+                        <div class="image-container">
+                            <img id="afterImageEl" src="/static/board_inspection_clean.jpg" alt="Rework Verified Clean PCBA">
+                            <div class="bbox-nominal"></div>
+                        </div>
+
+                        <div class="image-status-bar">
+                            <div class="label-caps" style="color: var(--color-clear); margin-bottom: 4px;">QUALITY CERTIFICATION &middot; RESTORAL PASS</div>
+                            <div class="status-header-text" style="color: var(--color-clear);">REWORK VERIFIED: FLUID FILLET FORMED</div>
+                            <p class="diagnosis-quote">
+                                "Inter-lead clearance confirmed (&ge; 0.20 mm specification). Solder bridge fully removed. IPC-A-610G Class 3 compliant."
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                        <span class="pill-badge" style="background:rgba(48,209,88,0.18); border:1px solid rgba(48,209,88,0.45); color:var(--color-clear);">
+                            PRE-POWER GATE: AUTHORIZED
+                        </span>
+                        <button onclick="toggleBeforeAfter()" class="btn-secondary" style="padding:4px 10px; border-radius:4px; font-size:9px; cursor:pointer;">
+                            TOGGLE BEFORE/AFTER VIEW
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Sensor Telemetry (5 Green Cards) -->
+                <div class="glass-panel telemetry-panel" style="border-color: rgba(48, 209, 88, 0.25);">
+                    <div class="cards-column">
+                        
+                        <!-- Card 1: POWER BUS -->
+                        <div class="metric-card card-clear">
+                            <div>
+                                <div class="label-caps">24V POWER BUS</div>
+                                <div class="mono-num metric-val-large" style="color:var(--color-clear);" id="c3Card1Val">24.18 V</div>
+                                <div class="metric-sub">24V RAIL &mdash; ENERGIZED</div>
+                            </div>
+                            <span class="status-pill-small" style="background:rgba(48,209,88,0.2); color:var(--color-clear);">
+                                ENERGIZED
+                            </span>
+                        </div>
+
+                        <!-- Card 2: LOAD CURRENT -->
+                        <div class="metric-card card-clear">
+                            <div>
+                                <div class="label-caps">LOAD CURRENT</div>
+                                <div class="mono-num metric-val-large" style="color:var(--color-clear);" id="c3Card2Val">4.20 A</div>
+                                <div class="metric-sub">NOMINAL OPERATING CURRENT</div>
+                            </div>
+                            <span class="status-pill-small" style="background:rgba(48,209,88,0.2); color:var(--color-clear);">
+                                PASS
+                            </span>
+                        </div>
+
+                        <!-- Card 3: JUNCTION TEMP -->
+                        <div class="metric-card card-clear">
+                            <div>
+                                <div class="label-caps">MCU JUNCTION TEMP</div>
+                                <div class="mono-num metric-val-large" style="color:var(--color-clear);" id="c3Card3Val">38.2 &deg;C</div>
+                                <div class="metric-sub">MCU THERMAL &mdash; NOMINAL EQUILIBRIUM</div>
+                            </div>
+                            <span class="status-pill-small" style="background:rgba(48,209,88,0.2); color:var(--color-clear);">
+                                NORMAL
+                            </span>
+                        </div>
+
+                        <!-- Card 4: CONTACTOR STATE -->
+                        <div class="metric-card card-clear">
+                            <div>
+                                <div class="label-caps">CONTACTOR STATE</div>
+                                <div class="mono-num metric-val-large" style="color:#FFF;">CLOSED</div>
+                                <div class="metric-sub">POWER AUTHORIZED &middot; GALVANIC INTERLOCK ARMED</div>
+                            </div>
+                            <span class="status-pill-small" style="background:rgba(48,209,88,0.2); color:var(--color-clear);">
+                                CLOSED &#10003;
+                            </span>
+                        </div>
+
+                        <!-- Card 5: INSPECTION RESULT -->
+                        <div class="metric-card card-clear">
+                            <div>
+                                <div class="label-caps">INSPECTION RESULT</div>
+                                <div class="mono-num metric-val-large" style="color:var(--color-clear);">PASS</div>
+                                <div class="metric-sub">BOARD CLEARED FOR PRODUCTION DEPLOYMENT</div>
+                            </div>
+                            <span class="status-pill-small" style="background:rgba(48,209,88,0.2); color:var(--color-clear);">
+                                CERTIFIED
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <!-- Bottom Bar: F5 Report, Next Board, View Audit -->
+                    <div class="action-bar">
+                        <a href="/report" target="_blank" class="btn-action btn-primary-clear" style="text-decoration:none;">
+                            [F5 &mdash; EXPORT RCA REPORT]
+                        </a>
+                        <button onclick="transitionToState('inspection')" class="btn-action btn-secondary">
+                            [NEXT BOARD]
+                        </button>
+                        <button onclick="window.open('/api/state')" class="btn-action btn-secondary">
+                            [VIEW AUDIT LOG]
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Footnote Strip -->
+    <div class="footnote-strip">
+        <span>OMNIINSPECT AI &middot; CYBER-PHYSICAL INTERLOCK v8.0</span>
+        <span>TELEMETRY SIMULATION LAYER &middot; READY FOR 100 kSPS SPI INGEST</span>
+        <span>IPC-A-610G CLASS 3 &middot; SHA-256 AUDIT VERIFIED</span>
+    </div>
+
+    <!-- Client-Side Script: WebSocket & State Machine -->
+    <script>
+        let currentMode = "fault"; // 'inspection' | 'fault' | 'nominal'
+        let countdownSec = 167.3;
+        let isClaimed = false;
+        let isWebcamActive = false;
+        let showBeforeInState3 = false;
+        let elapsedInspectionTimer = null;
+        let elapsedSeconds = 4.2;
+
+        const viewS1 = document.getElementById("viewState1");
+        const viewS2 = document.getElementById("viewState2");
+        const viewS3 = document.getElementById("viewState3");
+        const topBeacon = document.getElementById("topStateBeacon");
+        const beaconText = document.getElementById("beaconText");
+
+        // WebSocket Connection
+        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        const wsUrl = `${protocol}//${window.location.host}/ws/telemetry`;
+        let ws = new WebSocket(wsUrl);
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            updateSensors(data.sensors);
+        };
+
+        ws.onclose = () => {
+            // Reconnect after 2s
+            setTimeout(() => { ws = new WebSocket(wsUrl); }, 2000);
+        };
+
+        function updateSensors(s) {
+            if (!s) return;
+            // Update State 2 metrics
+            const c1 = document.getElementById("card1Val");
+            const c2 = document.getElementById("card2Val");
+            const c3 = document.getElementById("card3Val");
+            if (c1) c1.innerText = s.bus_voltage.toFixed(2) + " V";
+            if (c2) c2.innerText = s.peak_current.toFixed(2) + " A";
+            if (c3) c3.innerText = s.junction_temp.toFixed(1) + " °C";
+
+            // Update State 3 metrics
+            const c3c1 = document.getElementById("c3Card1Val");
+            const c3c2 = document.getElementById("c3Card2Val");
+            const c3c3 = document.getElementById("c3Card3Val");
+            if (c3c1) c3c1.innerText = s.bus_voltage.toFixed(2) + " V";
+            if (c3c2) c3c2.innerText = s.peak_current.toFixed(2) + " A";
+            if (c3c3) c3c3.innerText = s.junction_temp.toFixed(1) + " °C";
         }
 
-        function selectCamera(camId) {
-            activeCamId = camId;
-            const ch = channelsData.find(c => c.id === camId);
-            if (ch) {
-                document.getElementById("activeCamTitle").innerText = `${ch.id}: ${ch.name.toUpperCase()}`;
-                document.getElementById("activeCamRes").innerText = `${ch.resolution} · ${ch.illumination}`;
-                document.getElementById("hudCoords").innerText = `X: ${ch.coords.x.toFixed(3)} mm | Y: ${ch.coords.y.toFixed(3)} mm`;
+        // State Machine Switcher
+        async function transitionToState(mode) {
+            currentMode = mode;
+            await fetch(`/api/transition?target=${mode}`, { method: "POST" });
+
+            viewS1.classList.add("view-hidden");
+            viewS2.classList.add("view-hidden");
+            viewS3.classList.add("view-hidden");
+
+            topBeacon.className = "state-beacon";
+
+            if (mode === "inspection") {
+                viewS1.classList.remove("view-hidden");
+                topBeacon.classList.add("beacon-inspect");
+                beaconText.innerText = "STATE 1: INSPECTION ACTIVE";
+                startElapsedTimer();
+            } else if (mode === "fault") {
+                viewS2.classList.remove("view-hidden");
+                topBeacon.classList.add("beacon-fault");
+                beaconText.innerText = "STATE 2: FAULT DETECTED";
+                stopElapsedTimer();
+            } else if (mode === "nominal") {
+                viewS3.classList.remove("view-hidden");
+                topBeacon.classList.add("beacon-clear");
+                beaconText.innerText = "STATE 3: CLEARED — POWER AUTHORIZED";
+                stopElapsedTimer();
             }
-            renderCameraGrid();
-            renderInspectionCanvas();
-            triggerMetaAudit(camId);
         }
 
-        // Render Canvas with Reticle, Homography, & CAD Overlays
-        function renderInspectionCanvas() {
-            const canvas = document.getElementById("mainInspectorCanvas");
-            if (!canvas) return;
-            const ctx = canvas.getContext("2d");
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Countdown Timer Loop (State 2)
+        setInterval(() => {
+            if (currentMode === "fault" && !isClaimed) {
+                countdownSec = Math.max(0, countdownSec - 0.1);
+                const min = Math.floor(countdownSec / 60);
+                const sec = Math.floor(countdownSec % 60);
+                const tenth = Math.floor((countdownSec * 10) % 10);
+                
+                const timeStr = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}.${tenth}`;
+                const cdEl = document.getElementById("countdownDisplay");
+                if (cdEl) cdEl.innerText = timeStr;
 
-            const isPass = currentSystemState === "REWORK_CERTIFIED_PASS";
-
-            if (activeCamId === "CAM-01") {
-                if (macroImage.complete && macroImage.naturalHeight !== 0) {
-                    ctx.drawImage(macroImage, 0, 0, canvas.width, canvas.height);
-                } else {
-                    drawFallbackPCB(ctx, canvas);
+                // Animate circular ring
+                const circle = document.getElementById("timerCircle");
+                if (circle) {
+                    const totalLen = 113.1;
+                    const pct = countdownSec / 180.0;
+                    circle.style.strokeDashoffset = totalLen * (1 - pct);
                 }
-                drawMacroReticle(ctx, canvas, isPass);
-            } else if (activeCamId === "CAM-02") {
-                drawThermalHeatmap(ctx, canvas, isPass);
-            } else if (activeCamId === "CAM-03") {
-                const targetImg = isPass ? nominalImage : faultImage;
-                if (targetImg.complete && targetImg.naturalHeight !== 0) {
-                    ctx.drawImage(targetImg, 0, 0, canvas.width, canvas.height);
-                } else {
-                    drawFallbackPCB(ctx, canvas);
-                }
-                drawGlobalReticle(ctx, canvas, isPass);
+            }
+        }, 100);
+
+        function startElapsedTimer() {
+            elapsedSeconds = 0;
+            if (elapsedInspectionTimer) clearInterval(elapsedInspectionTimer);
+            elapsedInspectionTimer = setInterval(() => {
+                elapsedSeconds += 0.1;
+                const el = document.getElementById("s1Elapsed");
+                if (el) el.innerText = `00:${elapsedSeconds.toFixed(1)}s`;
+            }, 100);
+        }
+
+        function stopElapsedTimer() {
+            if (elapsedInspectionTimer) clearInterval(elapsedInspectionTimer);
+        }
+
+        async function claimTicket() {
+            await fetch("/api/interlock/claim", { method: "POST" });
+            isClaimed = true;
+            const btn = document.getElementById("btnClaim");
+            if (btn) {
+                btn.innerText = "TICKET CLAIMED (OP-4821)";
+                btn.style.borderColor = "var(--color-warn)";
+                btn.style.color = "var(--color-warn)";
             }
         }
 
-        function drawMacroReticle(ctx, canvas, isPass) {
-            const cx = canvas.width * 0.52;
-            const cy = canvas.height * 0.48;
+        async function forceQuarantine() {
+            await fetch("/api/interlock/quarantine", { method: "POST" });
+            alert("Board routed to Quarantine Bin B.");
+            transitionToState("inspection");
+        }
 
-            ctx.save();
-
-            if (!isPass) {
-                ctx.strokeStyle = "#EF4444";
-                ctx.lineWidth = 2.5;
-                ctx.strokeRect(cx - 36, cy - 24, 72, 48);
-
-                ctx.fillStyle = "#EF4444";
-                ctx.fillRect(cx - 38, cy - 26, 8, 3);
-                ctx.fillRect(cx - 38, cy - 26, 3, 8);
-                ctx.fillRect(cx + 30, cy - 26, 8, 3);
-                ctx.fillRect(cx + 35, cy - 26, 3, 8);
-
-                ctx.fillStyle = "rgba(17, 20, 26, 0.9)";
-                ctx.fillRect(cx - 70, cy - 54, 140, 22);
-                ctx.strokeStyle = "#EF4444";
-                ctx.lineWidth = 1;
-                ctx.strokeRect(cx - 70, cy - 54, 140, 22);
-
-                ctx.fillStyle = "#F87171";
-                ctx.font = "bold 10px 'JetBrains Mono', monospace";
-                ctx.textAlign = "center";
-                ctx.fillText("PIN 48 (+3V3) <-> PIN 49 (GND)", cx, cy - 40);
-            } else {
-                ctx.strokeStyle = "#10B981";
-                ctx.lineWidth = 2.0;
-                ctx.strokeRect(cx - 36, cy - 24, 72, 48);
-
-                ctx.fillStyle = "rgba(17, 20, 26, 0.9)";
-                ctx.fillRect(cx - 70, cy - 54, 140, 22);
-                ctx.strokeStyle = "#10B981";
-                ctx.lineWidth = 1;
-                ctx.strokeRect(cx - 70, cy - 54, 140, 22);
-
-                ctx.fillStyle = "#34D399";
-                ctx.font = "bold 10px 'JetBrains Mono', monospace";
-                ctx.textAlign = "center";
-                ctx.fillText("CLEARANCE: 0.24mm (PASS)", cx, cy - 40);
+        function toggleBeforeAfter() {
+            showBeforeInState3 = !showBeforeInState3;
+            const imgEl = document.getElementById("afterImageEl");
+            if (imgEl) {
+                imgEl.src = showBeforeInState3 ? "/static/board_inspection_macro.jpg" : "/static/board_inspection_clean.jpg";
             }
-
-            ctx.strokeStyle = "rgba(56, 189, 248, 0.6)";
-            ctx.lineWidth = 1;
-            ctx.setLineDash([4, 4]);
-            ctx.beginPath();
-            ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height);
-            ctx.moveTo(0, cy); ctx.lineTo(canvas.width, cy);
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            ctx.restore();
         }
 
-        function drawThermalHeatmap(ctx, canvas, isPass) {
-            const grad = ctx.createRadialGradient(
-                canvas.width * 0.52, canvas.height * 0.48, isPass ? 20 : 15,
-                canvas.width * 0.52, canvas.height * 0.48, isPass ? 180 : 320
-            );
-
-            if (!isPass) {
-                grad.addColorStop(0, "#FFFFFF");
-                grad.addColorStop(0.15, "#FDE047");
-                grad.addColorStop(0.40, "#EF4444");
-                grad.addColorStop(0.75, "#7F1D1D");
-                grad.addColorStop(1, "#090B0E");
-            } else {
-                grad.addColorStop(0, "#38BDF8");
-                grad.addColorStop(0.3, "#0284C7");
-                grad.addColorStop(0.7, "#0F172A");
-                grad.addColorStop(1, "#090B0E");
-            }
-
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
-            ctx.lineWidth = 1;
-            for (let x = 40; x < canvas.width; x += 60) {
-                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-            }
-            for (let y = 40; y < canvas.height; y += 60) {
-                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-            }
-
-            ctx.fillStyle = "#FFFFFF";
-            ctx.font = "bold 13px 'JetBrains Mono', monospace";
-            ctx.fillText(isPass ? "PEAK: 38.2 °C (NOMINAL)" : "PEAK: 104.2 °C (THERMAL SPIKE)", canvas.width * 0.52 + 40, canvas.height * 0.48 - 15);
-        }
-
-        function drawGlobalReticle(ctx, canvas, isPass) {
-            ctx.strokeStyle = isPass ? "#10B981" : "#EF4444";
-            ctx.lineWidth = 2;
-            ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
-        }
-
-        function drawFallbackPCB(ctx, canvas) {
-            ctx.fillStyle = "#0B1914";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#10B981";
-            ctx.font = "12px monospace";
-            ctx.fillText("LOADING TELECENTRIC OPTICAL SENSOR STREAM...", 40, 40);
-        }
-
-        function setZoom(val) {
-            currentZoom = val;
-            ["1x", "2x", "4x", "12x"].forEach(z => {
-                const el = document.getElementById("zoom" + z);
-                if (el) {
-                    if (z === val + "x") {
-                        el.className = "px-2 py-0.5 rounded bg-surfaceRaised border border-sky-400 text-sky-400 font-bold";
-                    } else {
-                        el.className = "px-2 py-0.5 rounded bg-surfaceRaised border border-borderSubtle text-slate-300 hover:text-white";
-                    }
-                }
-            });
-        }
-
-        async function toggleLiveWebcam() {
-            const video = document.getElementById("liveWebcamVideo");
-            const btn = document.getElementById("btnWebcam");
-            if (!isWebcamRunning) {
+        // Webcam stream toggle
+        async function toggleWebcam() {
+            const video = document.getElementById("webcamStream");
+            const img = document.getElementById("state1Image");
+            if (!isWebcamActive) {
                 try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                     video.srcObject = stream;
-                    video.classList.remove("hidden");
-                    btn.innerText = "DISCONNECT WEBCAM";
-                    btn.classList.add("border-sky-400", "text-sky-300");
-                    isWebcamRunning = true;
+                    video.style.display = "block";
+                    img.style.display = "none";
+                    isWebcamActive = true;
                 } catch (e) {
-                    alert("Could not access local camera: " + e.message);
+                    alert("Camera access denied or unavailable: " + e.message);
                 }
             } else {
                 if (video.srcObject) {
                     video.srcObject.getTracks().forEach(t => t.stop());
                 }
-                video.classList.add("hidden");
-                btn.innerText = "LIVE WEBCAM";
-                btn.classList.remove("border-sky-400", "text-sky-300");
-                isWebcamRunning = false;
+                video.style.display = "none";
+                img.style.display = "block";
+                isWebcamActive = false;
             }
         }
 
-        async function triggerMetaAudit(camId) {
-            try {
-                const res = await fetch("/api/audit", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ camera_id: camId })
-                });
-                const result = await res.json();
-                const feed = document.getElementById("metaReasoningFeed");
-                if (feed && result.meta_model) {
-                    feed.innerHTML = `
-                        <div class="text-sky-400 font-bold">[${result.meta_model.model} &middot; ${result.meta_model.segmenter}]: Live Perception Audit Complete.</div>
-                        <div class="text-slate-300">${result.meta_model.analysis}</div>
-                        <div class="text-[9px] text-slate-500 mt-1">&gt; Verdict: ${result.verdict} | Power Safe: ${result.safe_to_power}</div>
-                    `;
-                    feed.scrollTop = feed.scrollHeight;
-                }
-            } catch (err) {
-                console.warn("Meta audit request error:", err);
-            }
-        }
-
-        async function claimTicket() {
-            const res = await fetch("/api/interlock/claim", { method: "POST" });
-            const data = await res.json();
-            currentSystemState = "CLAIMED_REWORK";
-            document.getElementById("btnClaimTicket").innerText = "TICKET CLAIMED BY OP-4821";
-            document.getElementById("btnClaimTicket").className = "w-full py-2 px-3 rounded bg-amber-600 text-white font-mono text-xs font-bold";
-            await fetchTelemetry();
-        }
-
-        async function verifyReworkAndReset() {
-            const res = await fetch("/api/interlock/reset", { method: "POST" });
-            const data = await res.json();
-            currentSystemState = "REWORK_CERTIFIED_PASS";
-            for (let i = 1; i <= 5; i++) {
-                const cb = document.getElementById("step" + i);
-                if (cb) cb.checked = true;
-            }
-            await fetchTelemetry();
-            triggerMetaAudit(activeCamId);
-        }
-
-        async function routeAutoDesolder() {
-            const res = await fetch("/api/interlock/autodesolder", { method: "POST" });
-            alert("DUT routed to Station 4B (Robotic Selective Laser Desoldering Tool). SECS/GEM coordinates transmitted.");
-        }
-
-        async function quarantineDut() {
-            const res = await fetch("/api/interlock/quarantine", { method: "POST" });
-            alert("DUT ejected to lockable Quarantine Bin B. Station buffer clear.");
-            await fetchTelemetry();
-        }
-
-        function autoQuarantineDUT() {
-            quarantineDut();
-        }
-
-        async function toggleStep(stepKey) {
-            await fetch(`/api/interlock/rework_step?step_key=${stepKey}`, { method: "POST" });
-        }
-
-        async function openIncidentReportModal() {
-            const res = await fetch("/api/export_incident_report");
-            const text = await res.text();
-            document.getElementById("reportModalContent").innerText = text;
-            
-            // Extract SHA-256 line
-            const hashMatch = text.match(/Tamper-Evident SHA-256 Digest:\\s*([a-f0-9]{64})/i);
-            const hashVal = hashMatch ? hashMatch[1] : "d7a8f102...4b9c";
-            document.getElementById("modalHashDisplay").innerText = "TAMPER-EVIDENT SHA-256 DIGEST: " + hashVal;
-            
-            document.getElementById("reportModal").classList.remove("hidden");
-        }
-
-        function closeIncidentReportModal() {
-            document.getElementById("reportModal").classList.add("hidden");
-        }
-
-        function initSparkline() {
-            const canvas = document.getElementById("canvasSparkline");
-            if (!canvas) return;
-            const ctx = canvas.getContext("2d");
-            
-            function renderSpark() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.strokeStyle = currentSystemState === "REWORK_CERTIFIED_PASS" ? "#10B981" : "#EF4444";
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                for (let x = 0; x < canvas.width; x += 4) {
-                    const noise = (Math.random() - 0.5) * (currentSystemState === "REWORK_CERTIFIED_PASS" ? 3 : 15);
-                    const y = currentSystemState === "REWORK_CERTIFIED_PASS" ? (canvas.height * 0.4 + noise) : (canvas.height * 0.75 + noise);
-                    if (x === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                }
-                ctx.stroke();
-            }
-            setInterval(renderSpark, 200);
-        }
-
-        function setupKeyboardShortcuts() {
-            window.addEventListener("keydown", (e) => {
-                if (e.key === "F1") { e.preventDefault(); claimTicket(); }
-                if (e.key === "F2") { e.preventDefault(); verifyReworkAndReset(); }
-                if (e.key === "F3") { e.preventDefault(); routeAutoDesolder(); }
-                if (e.key === "F4") { e.preventDefault(); quarantineDut(); }
-                if (e.key === "F5") { e.preventDefault(); openIncidentReportModal(); }
-            });
-        }
+        // Keyboard Shortcuts (F1, F2, F5)
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "F1") { e.preventDefault(); claimTicket(); }
+            if (e.key === "F2") { e.preventDefault(); transitionToState("nominal"); }
+            if (e.key === "F5") { e.preventDefault(); window.open("/report", "_blank"); }
+            if (e.key === "1") { transitionToState("inspection"); }
+            if (e.key === "2") { transitionToState("fault"); }
+            if (e.key === "3") { transitionToState("nominal"); }
+        });
     </script>
 </body>
 </html>
-    """
+"""
     return HTMLResponse(content=html_content)
 
 
