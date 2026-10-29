@@ -32,7 +32,7 @@ class TestOmniInspectPlatform(unittest.TestCase):
         self.assertIn("FAILSAFE REVIEW TIMER", html)
 
     def test_printable_rca_report_generation(self):
-        """Verifies that the printable RCA Incident Report generates with SHA-256 digest."""
+        """Verifies that the printable RCA Incident Report generates with SHA-256 digest and epistemic receipts."""
         response = self.client.get("/report")
         self.assertEqual(response.status_code, 200)
         html = response.text
@@ -40,11 +40,29 @@ class TestOmniInspectPlatform(unittest.TestCase):
         self.assertIn("IPC-A-610G", html)
         self.assertIn("SHA-256", html)
         self.assertIn("INC-2026-", html)
+        self.assertIn("MEASURED", html)
+        self.assertIn("COMPUTED", html)
+        self.assertIn("INFERRED BY MUSE", html)
+        self.assertIn("BLACK BOX TELEMETRY RECORD", html)
 
         # Also test the alternative endpoint
         export_resp = self.client.get("/api/export_incident_report")
         self.assertEqual(export_resp.status_code, 200)
         self.assertIn("ROOT CAUSE ANALYSIS REPORT", export_resp.text)
+
+    def test_defect_preset_switching(self):
+        """Verifies multi-defect preset switching between U14, C24, and Q3."""
+        r_preset = self.client.post("/api/preset?preset_id=c24_polarity")
+        self.assertEqual(r_preset.status_code, 200)
+        data = r_preset.json()
+        self.assertEqual(data["status"], "SUCCESS")
+        self.assertIn("C24", data["preset"]["title"])
+        self.assertEqual(SYSTEM_STATE["active_preset"], "c24_polarity")
+
+        # Reset to U14
+        r_u14 = self.client.post("/api/preset?preset_id=u14_bridge")
+        self.assertEqual(r_u14.status_code, 200)
+        self.assertEqual(SYSTEM_STATE["active_preset"], "u14_bridge")
 
     def test_system_state_and_telemetry(self):
         """Verifies state query returns valid 32-bin FFT spectrum and electrical sensor readings."""

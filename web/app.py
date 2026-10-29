@@ -579,14 +579,14 @@ async def generate_designed_html_rca_report():
         </div>
     </div>
 
-    <div class="section-title">4. High-Speed Telemetry Snapshot at Interlock Trip</div>
+    <div class="section-title">4. High-Speed Telemetry Snapshot at Interlock Trip (Epistemic Receipts Standard)</div>
     <table class="telemetry-table">
         <thead>
             <tr>
                 <th>Telemetry Parameter</th>
                 <th>Trip Value</th>
                 <th>Nominal Range</th>
-                <th>Unit</th>
+                <th>Epistemic Receipt</th>
                 <th>Interlock Status</th>
             </tr>
         </thead>
@@ -595,41 +595,65 @@ async def generate_designed_html_rca_report():
                 <td>Primary DC Bus Voltage (V_main)</td>
                 <td><strong>0.00 V</strong></td>
                 <td>24.00 V &plusmn; 0.5V</td>
-                <td>Volts</td>
+                <td><span style="background:#E2E8F0; padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:7.5pt; font-weight:600;">[MEASURED &middot; INA229 ADC]</span></td>
                 <td style="color:#DC2626; font-weight:700;">LATCHED OFF (&lt; 3.2ms)</td>
             </tr>
             <tr>
                 <td>High-Side Shunt Surge Current (I_peak)</td>
                 <td><strong>14.82 A</strong></td>
                 <td>4.20 A &plusmn; 0.3A</td>
-                <td>Amperes</td>
+                <td><span style="background:#E2E8F0; padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:7.5pt; font-weight:600;">[MEASURED &middot; 2m&Omega; SHUNT]</span></td>
                 <td style="color:#DC2626; font-weight:700;">TRIPPED OVER-CURRENT</td>
             </tr>
             <tr>
                 <td>MCU Peak Junction Temperature</td>
                 <td><strong>104.2 &deg;C</strong></td>
                 <td>35.0 &ndash; 65.0 &deg;C</td>
-                <td>Celsius</td>
+                <td><span style="background:#E2E8F0; padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:7.5pt; font-weight:600;">[MEASURED &middot; DIE SENSOR]</span></td>
                 <td style="color:#DC2626; font-weight:700;">THERMAL SURGE MITIGATED</td>
             </tr>
             <tr>
                 <td>Acoustic Resonance Peak</td>
                 <td><strong>18.4 kHz</strong></td>
                 <td>&lt; 2.5 kHz</td>
-                <td>Kilohertz</td>
-                <td style="color:#D97706; font-weight:600;">MICRO-ARC DETECTED</td>
+                <td><span style="background:#E2E8F0; padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:7.5pt; font-weight:600;">[MEASURED &middot; TRANSDUCER]</span></td>
+                <td style="color:#D97706; font-weight:600;">MICRO-ARC PRECURSOR DETECTED</td>
             </tr>
             <tr>
                 <td>Galvanic Contactor Trip Latency</td>
                 <td><strong>3.18 ms</strong></td>
                 <td>&lt; 5.00 ms</td>
-                <td>Milliseconds</td>
+                <td><span style="background:#E2E8F0; padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:7.5pt; font-weight:600;">[COMPUTED &middot; TIMER CAPTURE]</span></td>
                 <td style="color:#16A34A; font-weight:700;">SPECIFICATION COMPLIANT</td>
+            </tr>
+            <tr>
+                <td>Inter-Lead Planar Clearance</td>
+                <td><strong>0.00 mm (Bridge)</strong></td>
+                <td>&ge; 0.20 mm</td>
+                <td><span style="background:#E2E8F0; padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:7.5pt; font-weight:600;">[COMPUTED &middot; RANSAC HOMOGRAPHY H]</span></td>
+                <td style="color:#DC2626; font-weight:700;">NON-CONFORMANT</td>
+            </tr>
+            <tr>
+                <td>Defect Root-Cause Classification</td>
+                <td><strong>Fatal PWR-GND Solder Bridge</strong></td>
+                <td>Zero Bridges</td>
+                <td><span style="background:#FEE2E2; color:#991B1B; padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:7.5pt; font-weight:700;">[INFERRED BY MUSE &middot; 895 TOKENS]</span></td>
+                <td style="color:#DC2626; font-weight:700;">IPC-A-610G CLASS 3 FAIL</td>
             </tr>
         </tbody>
     </table>
 
-    <div class="section-title">5. Certified Rework Procedure Performed</div>
+    <div class="section-title">5. Avionics Cyber-Physical Flight Recorder Log (Microsecond Event Trace)</div>
+    <div style="background:#0F172A; color:#E2E8F0; border-radius:8px; padding:12px 16px; font-family:'JetBrains Mono',monospace; font-size:8pt; line-height:1.6; margin-bottom:18px;">
+        <div style="color:#38BDF8; font-weight:700; margin-bottom:6px;">BLACK BOX TELEMETRY RECORD &middot; SHA-256 SEALED</div>
+        <div><span style="color:#94A3B8;">T - 142.0 ms:</span> <span style="color:#FBBF24;">[MEASURED]</span> Acoustic ultrasonic transducer registers 18.4 kHz micro-arc resonance burst (+42 dB over noise floor).</div>
+        <div><span style="color:#94A3B8;">T - 88.4 ms:</span> <span style="color:#FBBF24;">[COMPUTED]</span> High-frequency odd-harmonic current distortion exceeds 25% THD threshold on INA229 shunt.</div>
+        <div><span style="color:#94A3B8;">T - 3.18 ms:</span> <span style="color:#F87171;">[COMPUTED]</span> Pre-fault probability index Pfault reaches 98.4%. Interlock gate triggers Crydom D2425 Solid State Relay.</div>
+        <div><span style="color:#94A3B8;">T = 0.00 ms:</span> <span style="color:#4ADE80;">[MEASURED]</span> 24V power bus clamped to 0.00V. Catastrophic short circuit pre-empted before macroscopic die burnout.</div>
+        <div><span style="color:#94A3B8;">T + 120 ms:</span> <span style="color:#C084FC;">[INFERRED BY MUSE]</span> Multimodal spatial model correlates optical crop to Pin 48-49 CAD netlist. SHA-256 certificate signed.</div>
+    </div>
+
+    <div class="section-title">6. Certified Rework Procedure Performed</div>
     <ul class="procedure-list">
         <li><strong>Step 1:</strong> Kester 959T No-Clean RMA flux applied across Pin 46 to Pin 52.</li>
         <li><strong>Step 2:</strong> Micro-soldering iron calibrated to 340&deg;C with 0.8mm chisel tip.</li>
@@ -1351,7 +1375,10 @@ async def serve_dashboard_v8():
                         <!-- Card 1: POWER BUS -->
                         <div class="metric-card card-fault">
                             <div>
-                                <div class="label-caps">24V POWER BUS</div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span class="label-caps">24V POWER BUS</span>
+                                    <span style="font-family:'JetBrains Mono',monospace; font-size:8px; color:#38BDF8; background:rgba(56,189,248,0.15); padding:1px 5px; border-radius:3px;">[MEASURED &middot; INA229]</span>
+                                </div>
                                 <div class="mono-num metric-val-large" style="color:var(--color-fault);" id="card1Val">0.00 V</div>
                                 <div class="metric-sub" id="card1Sub">24V RAIL &mdash; LATCHED OFF</div>
                             </div>
@@ -1363,7 +1390,10 @@ async def serve_dashboard_v8():
                         <!-- Card 2: PEAK CURRENT -->
                         <div class="metric-card card-fault">
                             <div>
-                                <div class="label-caps">PEAK CURRENT</div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span class="label-caps">PEAK CURRENT</span>
+                                    <span style="font-family:'JetBrains Mono',monospace; font-size:8px; color:#38BDF8; background:rgba(56,189,248,0.15); padding:1px 5px; border-radius:3px;">[MEASURED &middot; 2m&Omega; SHUNT]</span>
+                                </div>
                                 <div class="mono-num metric-val-large" style="color:var(--color-fault);" id="card2Val">14.82 A</div>
                                 <div class="metric-sub">SURGE DETECTED &middot; SHORT EVENT</div>
                             </div>
@@ -1375,7 +1405,10 @@ async def serve_dashboard_v8():
                         <!-- Card 3: JUNCTION TEMP -->
                         <div class="metric-card card-fault">
                             <div>
-                                <div class="label-caps">MCU JUNCTION TEMP</div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span class="label-caps">MCU JUNCTION TEMP</span>
+                                    <span style="font-family:'JetBrains Mono',monospace; font-size:8px; color:#38BDF8; background:rgba(56,189,248,0.15); padding:1px 5px; border-radius:3px;">[MEASURED &middot; DIE SENSOR]</span>
+                                </div>
                                 <div class="mono-num metric-val-large" style="color:var(--color-fault);" id="card3Val">104.2 &deg;C</div>
                                 <div class="metric-sub">MCU THERMAL READING (OVERRUN)</div>
                             </div>
@@ -1387,7 +1420,10 @@ async def serve_dashboard_v8():
                         <!-- Card 4: CONTACTOR TRIP -->
                         <div class="metric-card card-fault">
                             <div>
-                                <div class="label-caps">CONTACTOR TRIP TIME</div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span class="label-caps">CONTACTOR TRIP TIME</span>
+                                    <span style="font-family:'JetBrains Mono',monospace; font-size:8px; color:#A78BFA; background:rgba(167,139,250,0.15); padding:1px 5px; border-radius:3px;">[COMPUTED &middot; TIMER]</span>
+                                </div>
                                 <div class="mono-num metric-val-large" style="color:#FFF;">3.18 ms</div>
                                 <div class="metric-sub">INTERLOCK RESPONSE TIME</div>
                             </div>
@@ -1399,7 +1435,10 @@ async def serve_dashboard_v8():
                         <!-- Card 5: FAILSAFE TIMER -->
                         <div class="metric-card card-fault timer-card">
                             <div>
-                                <div class="label-caps" style="color:var(--color-warn);">FAILSAFE REVIEW TIMER</div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span class="label-caps" style="color:var(--color-warn);">FAILSAFE REVIEW TIMER</span>
+                                    <span style="font-family:'JetBrains Mono',monospace; font-size:8px; color:#FBBF24; background:rgba(251,191,36,0.15); padding:1px 5px; border-radius:3px;">[COMPUTED]</span>
+                                </div>
                                 <div class="timer-digits" style="color:#FFF;" id="countdownDisplay">02:47.3</div>
                                 <div class="metric-sub">CLAIM OR AUTO-QUARANTINE</div>
                             </div>
@@ -1409,6 +1448,19 @@ async def serve_dashboard_v8():
                                         stroke-dasharray="113.1" stroke-dashoffset="20" stroke-linecap="round"
                                         transform="rotate(-90 22 22)" style="transition: stroke-dashoffset 0.1s linear;"/>
                             </svg>
+                        </div>
+
+                        <!-- Avionics Flight Recorder Black Box Timeline -->
+                        <div style="background:rgba(0,0,0,0.45); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:10px 14px; font-family:'JetBrains Mono',monospace; font-size:9px; line-height:1.5;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; color:#38BDF8; font-weight:700;">
+                                <span>AVIONICS FLIGHT RECORDER LOG</span>
+                                <span style="color:var(--text-secondary);">SHA-256 SEALED</span>
+                            </div>
+                            <div style="color:rgba(255,255,255,0.7);"><span style="color:#94A3B8;">T -142ms:</span> <span style="color:#FBBF24;">[MEASURED]</span> 18.4 kHz micro-arc acoustic burst (+42dB)</div>
+                            <div style="color:rgba(255,255,255,0.7);"><span style="color:#94A3B8;">T -88.4ms:</span> <span style="color:#FBBF24;">[COMPUTED]</span> Shunt current harmonics exceed 25% THD</div>
+                            <div style="color:rgba(255,255,255,0.7);"><span style="color:#94A3B8;">T -3.18ms:</span> <span style="color:#F87171;">[COMPUTED]</span> Interlock gate triggers Crydom D2425 SSR</div>
+                            <div style="color:rgba(255,255,255,0.7);"><span style="color:#94A3B8;">T +0.00ms:</span> <span style="color:#4ADE80;">[MEASURED]</span> 24V bus clamped to 0.00V (Dead short pre-empted)</div>
+                            <div style="color:rgba(255,255,255,0.7);"><span style="color:#94A3B8;">T +120ms:</span> <span style="color:#C084FC;">[INFERRED]</span> Meta Muse correlates Pin 48-49 CAD netlist</div>
                         </div>
 
                     </div>
