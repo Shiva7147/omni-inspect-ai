@@ -62,7 +62,10 @@ In the spirit of complete technical transparency, the following table delineates
 | **Sub-Pixel Homography** | **Implemented** | `engine/vision/homography.py` computes planar projective transform matrices via OpenCV `findHomography` with RANSAC. In the web demo UI, the reticle is anchored to static carrier coordinates for determinism. |
 | **Safety Interlock Gate** | **Software-Emulated** | Software state machine controlling simulated Crydom D2425 Solid State Relay (target spec: $< 5.0\text{ ms}$ trip latency; $3.18\text{ ms}$ simulated benchmark). |
 | **Sensor Telemetry Engine** | **Simulated WebSocket** | `web/app.py` streams simulated voltage ripple, current surge, thermal drift, and 32-bin FFT spectrum at 250ms intervals over WebSockets, designed for real 100 kSPS SPI ADC ingest. |
-| **Printable RCA Report** | **Built** | Generates certified, print-ready HTML incident reports complete with side-by-side macro comparisons, 5-step rework instructions, and dynamic **SHA-256 cryptographic audit digests**. |
+| **Epistemic Receipts Standard** | **Built** | Strictly labels every parameter as `[MEASURED]` (hardware ADC), `[COMPUTED]` (deterministic mathematics), or `[INFERRED BY MUSE]` (neural reasoning). Zero mystery numbers. |
+| **Avionics Flight Recorder** | **Built** | Logs microsecond-level event timelines ($T_{-142\text{ms}}$ micro-arc detected $\rightarrow T_{-3.18\text{ms}}$ interlock trip $\rightarrow T_0$ bus cutoff), sealed into SHA-256 digests. |
+| **CAD Digital Twin** | **Built** | Interactive SVG schematic cross-probing correlating physical camera pixels to KiCad schematic net nodes ($V_{\text{pads}} \leftrightarrow E_{\text{nets}}$). |
+| **Printable RCA Report** | **Built** | Generates certified, print-ready HTML incident reports complete with side-by-side macro comparisons, 5-step rework instructions, flight recorder logs, and dynamic **SHA-256 cryptographic audit digests**. |
 | **CLI Verification Auditor** | **Built** | `engine/cli_audit.py` provides a standalone terminal auditor executing live inference and returning ANSI colored engineering tables. |
 
 ---
