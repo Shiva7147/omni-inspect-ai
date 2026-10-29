@@ -1,0 +1,2702 @@
+[
+  {
+    "trial_id": 0,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 1,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 2,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 3,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 4,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 5,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 6,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 7,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 8,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 9,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 10,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 11,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 12,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 13,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 14,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 15,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 16,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 17,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 18,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 19,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 20,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 21,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 22,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 23,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 24,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 25,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 26,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 27,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 28,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 29,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 30,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 31,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 32,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 33,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 34,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 35,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 36,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 37,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 38,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 39,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 40,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 41,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 42,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 43,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 44,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 45,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 46,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 47,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 48,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 49,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 50,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 51,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 52,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 53,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 54,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 55,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 56,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 57,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 58,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 59,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 60,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 61,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 62,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 63,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 64,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 65,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 66,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 67,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 68,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 69,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 70,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 71,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 72,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 73,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 74,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 75,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 76,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 77,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 78,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 79,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 80,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 81,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 82,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 83,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 84,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 85,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 86,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 87,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 88,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 89,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 90,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 91,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 92,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 93,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 94,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 95,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 96,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 97,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 98,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 99,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 100,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 101,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 102,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 103,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 104,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 105,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 106,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 107,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 108,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 109,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 110,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 111,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 112,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 113,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 114,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 115,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 116,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 117,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 118,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 119,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 120,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 121,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 122,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 123,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 124,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 125,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 126,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 127,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 128,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 129,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 130,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 131,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 132,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 133,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 134,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 135,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 136,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 137,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 138,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 139,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 140,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 141,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 142,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 143,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 144,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 145,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 146,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 147,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 148,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 149,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 150,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 151,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 152,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 153,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 154,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 155,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 156,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 157,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 158,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 159,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 160,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 161,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 162,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 163,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 164,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 165,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 166,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 167,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 168,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 169,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 170,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 171,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 172,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 173,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 174,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 175,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 176,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 177,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 178,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 179,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 180,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 181,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 182,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 183,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 184,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 185,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 186,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 187,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 188,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 189,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 190,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 191,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 192,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 193,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 194,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 195,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 196,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 197,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 198,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 199,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 200,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 201,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 202,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 203,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 204,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 205,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 206,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 207,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 208,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 209,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 210,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 211,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 212,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 213,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 214,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 215,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 216,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 217,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 218,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 219,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 220,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 221,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 222,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 223,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 224,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 225,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 226,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 227,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 228,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 229,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 230,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 231,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 232,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 233,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 234,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 235,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 236,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 237,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 238,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 239,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 240,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 241,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 242,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 243,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 244,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 245,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 246,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 247,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 248,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 249,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 250,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 251,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 252,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 253,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 254,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 255,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 256,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 257,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 258,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 259,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 260,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 261,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 262,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 263,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 264,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 265,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 266,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 267,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 268,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 269,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 270,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 271,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 272,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 273,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 274,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 275,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 276,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 277,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 278,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 279,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 280,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 281,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 282,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 283,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 284,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 285,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 286,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 287,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 288,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 289,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 290,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 291,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 292,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 293,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 294,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 295,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 296,
+    "fault_class": 0,
+    "fault_class_name": "Nominal Baseline",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 0.0
+  },
+  {
+    "trial_id": 297,
+    "fault_class": 1,
+    "fault_class_name": "Solder Filament Micro-Bridging",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 298,
+    "fault_class": 2,
+    "fault_class_name": "MLCC Dielectric Breakdown",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  },
+  {
+    "trial_id": 299,
+    "fault_class": 3,
+    "fault_class_name": "Flux Ionic Migration",
+    "samples": 70000,
+    "duration_s": 0.7,
+    "fs": 100000,
+    "pre_fault_lead_time_ms": 200.0
+  }
+]

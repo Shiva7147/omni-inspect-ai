@@ -36,4 +36,6 @@ checkpoints/
 *.safetensors
 *.bin
 *.onnx
+*.npz
 data/raw/
+data/fault_dataset/*.npz

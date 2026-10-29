@@ -13,6 +13,10 @@ shapely>=2.0.6
 scipy>=1.14.0
 Pillow>=10.4.0
 
+# Machine Learning & Signal Processing
+scikit-learn>=1.5.0
+joblib>=1.4.0
+
 # LLM & Agent SDKs
 openai>=1.52.0
 anthropic>=0.37.0

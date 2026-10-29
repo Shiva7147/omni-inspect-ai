@@ -313,6 +313,108 @@ async def execute_live_audit():
     }
 
 
+# Multi-Station Fleet Telemetry Ingest & Edge Interlock Integration
+STATION_REGISTRY: Dict[str, Dict[str, Any]] = {
+    "STATION-EDGE-01": {
+        "station_id": "STATION-EDGE-01",
+        "role": "SMT Line 4 Pre-Power Gate",
+        "status": "ACTIVE",
+        "last_seen_ns": time.time_ns(),
+        "contactor_state": "CLOSED",
+        "recent_alert": None,
+        "sample_count": 0,
+        "last_frame": {
+            "bus_voltage_v": 3.30,
+            "current_ma": 182.4,
+            "ir_temp_c": 34.2,
+            "acoustic_energy_db": 22.4
+        }
+    }
+}
+
+
+class StationTelemetryPayload(BaseModel):
+    station_id: str
+    timestamp_ns: int
+    bus_voltage_v: float
+    shunt_voltage_mv: float
+    current_ma: float
+    ir_temp_c: float
+    acoustic_energy_db: float
+    contactor_closed: bool
+
+
+class StationAlertPayload(BaseModel):
+    station_id: str
+    timestamp_ns: int
+    reason: str
+    anomaly_score: float
+    trip_duration_us: float
+    features: Dict[str, float]
+
+
+@app.get("/api/stations")
+async def list_fleet_stations():
+    """Lists connected edge stations across the factory line."""
+    return {"stations": list(STATION_REGISTRY.values())}
+
+
+@app.post("/api/station/telemetry")
+async def ingest_station_telemetry(payload: StationTelemetryPayload):
+    """Receives 100kSPS telemetry summary packets from Raspberry Pi edge daemons."""
+    s_id = payload.station_id
+    if s_id not in STATION_REGISTRY:
+        STATION_REGISTRY[s_id] = {
+            "station_id": s_id,
+            "role": "Edge Safety Gate",
+            "status": "ACTIVE",
+            "last_seen_ns": payload.timestamp_ns,
+            "contactor_state": "CLOSED" if payload.contactor_closed else "OPEN",
+            "recent_alert": None,
+            "sample_count": 0,
+            "last_frame": {}
+        }
+    station = STATION_REGISTRY[s_id]
+    station["last_seen_ns"] = payload.timestamp_ns
+    station["sample_count"] += 1
+    station["contactor_state"] = "CLOSED" if payload.contactor_closed else "OPEN"
+    station["last_frame"] = {
+        "bus_voltage_v": payload.bus_voltage_v,
+        "shunt_voltage_mv": payload.shunt_voltage_mv,
+        "current_ma": payload.current_ma,
+        "ir_temp_c": payload.ir_temp_c,
+        "acoustic_energy_db": payload.acoustic_energy_db
+    }
+    return {"status": "INGESTED", "station_id": s_id}
+
+
+@app.post("/api/station/alert")
+async def ingest_station_alert(alert: StationAlertPayload):
+    """Receives emergency predictive trip alerts from edge daemons."""
+    s_id = alert.station_id
+    if s_id in STATION_REGISTRY:
+        STATION_REGISTRY[s_id]["status"] = "TRIPPED_SAFE"
+        STATION_REGISTRY[s_id]["contactor_state"] = "OPEN"
+        STATION_REGISTRY[s_id]["recent_alert"] = alert.model_dump()
+
+    # Trigger central system state into fault quarantine
+    SYSTEM_STATE["current_mode"] = "fault"
+    simulator.state = "fault"
+    SYSTEM_STATE["is_claimed"] = False
+
+    return {"status": "ALERT_RECORDED", "station_id": s_id, "interlock": "OPEN"}
+
+
+@app.post("/api/edge/benchmark")
+async def run_edge_benchmark(cycles: int = 100, fault_at: int = 80):
+    """Executes live edge inference benchmark measuring microsecond latency."""
+    from engine.edge.inference_daemon import EdgeInferenceEngine
+    edge = EdgeInferenceEngine(station_id="BENCHMARK-RUNNER")
+    res = edge.run_benchmark(num_cycles=cycles, inject_fault_at=fault_at)
+    return res
+
+
+
 @app.get("/report", response_class=HTMLResponse)
 @app.get("/api/export_incident_report", response_class=HTMLResponse)
 async def generate_designed_html_rca_report():

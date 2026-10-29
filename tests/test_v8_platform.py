@@ -112,6 +112,88 @@ class TestOmniInspectPlatform(unittest.TestCase):
         self.assertEqual(r_quar.json()["status"], "QUARANTINED")
         self.assertEqual(SYSTEM_STATE["current_mode"], "inspection")
 
+    def test_feature_extraction_pipeline(self):
+        """Verifies 14-dimensional feature extraction runs accurately on 100kSPS window."""
+        import numpy as np
+        from engine.ml.feature_engineering import extract_window_features, FEATURE_NAMES
+        synthetic_win = np.zeros((5000, 5), dtype=np.float32)
+        synthetic_win[:, 0] = 3.30  # bus voltage
+        synthetic_win[:, 1] = 180.0 # current
+        synthetic_win[:, 3] = 22.0  # acoustic
+        synthetic_win[:, 4] = 34.2  # temp
+        features = extract_window_features(synthetic_win)
+        self.assertEqual(len(features), 14)
+        self.assertAlmostEqual(features[0], 3.30, places=2)  # v_rms
+        self.assertAlmostEqual(features[4], 180.0, places=1) # i_rms
+        self.assertEqual(len(FEATURE_NAMES), 14)
+
+    def test_fleet_telemetry_and_alert_ingest(self):
+        """Verifies multi-station fleet telemetry ingest and predictive alert handling."""
+        # Test fleet list
+        r_list = self.client.get("/api/stations")
+        self.assertEqual(r_list.status_code, 200)
+        self.assertTrue(len(r_list.json()["stations"]) >= 1)
+
+        # Ingest telemetry frame from edge node
+        telemetry_payload = {
+            "station_id": "STATION-EDGE-TEST",
+            "timestamp_ns": 1729000000000000000,
+            "bus_voltage_v": 3.301,
+            "shunt_voltage_mv": 1.82,
+            "current_ma": 182.0,
+            "ir_temp_c": 34.5,
+            "acoustic_energy_db": 22.1,
+            "contactor_closed": True
+        }
+        r_telem = self.client.post("/api/station/telemetry", json=telemetry_payload)
+        self.assertEqual(r_telem.status_code, 200)
+        self.assertEqual(r_telem.json()["status"], "INGESTED")
+
+        # Ingest predictive interlock trip alert
+        alert_payload = {
+            "station_id": "STATION-EDGE-TEST",
+            "timestamp_ns": 1729000000005000000,
+            "reason": "PREDICTIVE ANOMALY SCORE 0.770 > 0.680",
+            "anomaly_score": 0.770,
+            "trip_duration_us": 1.2,
+            "features": {"v_rms": 3.15, "i_rms": 290.0}
+        }
+        r_alert = self.client.post("/api/station/alert", json=alert_payload)
+        self.assertEqual(r_alert.status_code, 200)
+        self.assertEqual(r_alert.json()["status"], "ALERT_RECORDED")
+        self.assertEqual(SYSTEM_STATE["current_mode"], "fault")
+
+    def test_edge_benchmark_and_latency_budget(self):
+        """Verifies edge inference completes within <5.0 ms latency budget and trips accurately."""
+        r_bench = self.client.post("/api/edge/benchmark?cycles=30&fault_at=20")
+        self.assertEqual(r_bench.status_code, 200)
+        data = r_bench.json()
+        self.assertTrue(data["success"])
+        self.assertEqual(data["tripped_at_cycle"], 20)
+        self.assertTrue(data["within_5ms_budget"])
+        self.assertLess(data["avg_latency_us"], 5000.0)
+
+    def test_failsafe_watchdog_timeout(self):
+        """Verifies dead-man's switch watchdog fires trip callback on missing heartbeat."""
+        import time
+        from engine.edge.watchdog import FailSafeWatchdog
+        tripped = {"fired": False}
+
+        def on_trip():
+            tripped["fired"] = True
+
+        wd = FailSafeWatchdog(timeout_ms=50.0, trip_callback=on_trip)
+        wd.start()
+        time.sleep(0.02)
+        wd.kick()  # heartbeat 1
+        time.sleep(0.02)
+        wd.kick()  # heartbeat 2
+        self.assertFalse(tripped["fired"])
+        # Deliberately starve heartbeat
+        time.sleep(0.08)
+        self.assertTrue(tripped["fired"])
+        wd.stop()
+
 
 if __name__ == "__main__":
     unittest.main()
