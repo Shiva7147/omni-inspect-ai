@@ -1304,6 +1304,49 @@ async def serve_dashboard_v8():
             box-shadow: 0 0 16px rgba(48, 209, 88, 0.35);
         }
 
+        /* 5-Step Interactive Guided Workflow Stepper */
+        .workflow-step-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            padding: 10px 12px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .workflow-step-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+        .workflow-step-card.active-step {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.22) 0%, rgba(139, 92, 246, 0.22) 100%);
+            border-color: #38BDF8;
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+        }
+        .workflow-step-card .step-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 800;
+            color: #94A3B8;
+        }
+        .workflow-step-card.active-step .step-num {
+            color: #38BDF8;
+        }
+        .workflow-step-card .step-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #FFF;
+            letter-spacing: 0.02em;
+        }
+        .workflow-step-card .step-sub {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.55);
+        }
+
         /* 4 Main Workspace Navigation Tabs */
         .main-tab {
             background: rgba(255, 255, 255, 0.05);
@@ -1402,6 +1445,84 @@ async def serve_dashboard_v8():
             </div>
         </div>
     </header>
+
+    <!-- ==================================================================== -->
+    <!-- 5-STEP GUIDED INTERACTIVE WORKFLOW: CLEAN END-TO-END STORY          -->
+    <!-- ==================================================================== -->
+    <section class="glass-panel" style="margin: 0 40px 16px 40px; padding: 14px 20px; border-color: rgba(59, 130, 246, 0.4); background: rgba(10, 16, 30, 0.88);">
+        <!-- Stepper Top Bar: Step Counter + Navigation -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; color:#93C5FD; background:rgba(59,130,246,0.18); border:1px solid rgba(59,130,246,0.35); padding:3px 8px; border-radius:4px;">
+                    END-TO-END VERIFIED PIPELINE
+                </span>
+                <span id="currentStepBadge" style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#C084FC; font-weight:700;">
+                    STEP 1 OF 5 &middot; OPERATOR SIGN-IN &amp; MISSION CONTEXT
+                </span>
+            </div>
+
+            <!-- Stepper Navigation Controls -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button onclick="navigateWorkflow(-1)" class="tab-btn" style="padding: 5px 12px; font-size: 10px; cursor: pointer;">
+                    &#9664; PREVIOUS
+                </button>
+                <button onclick="navigateWorkflow(1)" class="btn-primary" style="padding: 5px 14px; font-size: 10px; font-weight: 700; cursor: pointer;">
+                    NEXT STEP &#9654;
+                </button>
+                <button id="workflowPlayBtn" onclick="toggleWorkflowAutoPlay()" class="tab-btn" style="padding: 5px 12px; font-size: 10px; background: rgba(168,85,247,0.2); border-color: #A855F7; color: #FFF; cursor: pointer;">
+                    &#9654; AUTO-PLAY (30s)
+                </button>
+            </div>
+        </div>
+
+        <!-- 5 Interactive Step Cards (1-Click Direct Jump) -->
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
+            <button id="stepBtn1" onclick="goToWorkflowStep(1)" class="workflow-step-card active-step">
+                <div class="step-num">01</div>
+                <div>
+                    <div class="step-title">ADMIN SIGN-IN</div>
+                    <div class="step-sub">Sarah Chen &middot; T-48h</div>
+                </div>
+            </button>
+
+            <button id="stepBtn2" onclick="goToWorkflowStep(2)" class="workflow-step-card">
+                <div class="step-num">02</div>
+                <div>
+                    <div class="step-title">OPTICAL SCAN</div>
+                    <div class="step-sub">Meta Muse &middot; Baseten</div>
+                </div>
+            </button>
+
+            <button id="stepBtn3" onclick="goToWorkflowStep(3)" class="workflow-step-card">
+                <div class="step-num">03</div>
+                <div>
+                    <div class="step-title">INTERLOCK TRIP</div>
+                    <div class="step-sub">1.52ms Relay Cutoff</div>
+                </div>
+            </button>
+
+            <button id="stepBtn4" onclick="goToWorkflowStep(4)" class="workflow-step-card">
+                <div class="step-num">04</div>
+                <div>
+                    <div class="step-title">TECHNICIAN REWORK</div>
+                    <div class="step-sub">Flux &amp; Wick Desolder</div>
+                </div>
+            </button>
+
+            <button id="stepBtn5" onclick="goToWorkflowStep(5)" class="workflow-step-card">
+                <div class="step-num">05</div>
+                <div>
+                    <div class="step-title">RE-SCAN &amp; POWER</div>
+                    <div class="step-sub">24V Nominal &middot; Modal</div>
+                </div>
+            </button>
+        </div>
+
+        <!-- Dynamic Step Content Viewport: Explaining EXACTLY what is happening and WHICH MODEL is used -->
+        <div id="workflowStepContent" style="margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08);">
+            <!-- Rendered dynamically by renderWorkflowStep(1) -->
+        </div>
+    </section>
 
     <!-- ==================================================================== -->
     <!-- HIGH-IMPACT 3-CARD MISSION HUD (CLEAN & EFFORTLESS TO UNDERSTAND)    -->
@@ -2442,6 +2563,9 @@ async def serve_dashboard_v8():
         const topBeacon = document.getElementById("topStateBeacon");
         const beaconText = document.getElementById("beaconText");
 
+        // Initialize Step 1 on Load
+        setTimeout(() => { goToWorkflowStep(1); }, 300);
+
         // WebSocket Connection
         const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
         const wsUrl = `${protocol}//${window.location.host}/ws/telemetry`;
@@ -2458,6 +2582,292 @@ async def serve_dashboard_v8():
             // Reconnect after 2s
             setTimeout(() => { ws = new WebSocket(wsUrl); }, 2000);
         };
+
+        // ====================================================================
+        // 5-STEP GUIDED INTERACTIVE WORKFLOW ENGINE (CLEAN STEP-BY-STEP STORY)
+        // ====================================================================
+        let currentWorkflowStep = 1;
+        let workflowAutoPlayTimer = null;
+
+        function goToWorkflowStep(stepNum) {
+            currentWorkflowStep = stepNum;
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.getElementById("stepBtn" + i);
+                if (btn) btn.classList.toggle("active-step", i === stepNum);
+            }
+            renderWorkflowStep(stepNum);
+        }
+
+        function navigateWorkflow(delta) {
+            let next = currentWorkflowStep + delta;
+            if (next < 1) next = 1;
+            if (next > 5) next = 5;
+            goToWorkflowStep(next);
+        }
+
+        function toggleWorkflowAutoPlay() {
+            const playBtn = document.getElementById("workflowPlayBtn");
+            if (workflowAutoPlayTimer) {
+                clearInterval(workflowAutoPlayTimer);
+                workflowAutoPlayTimer = null;
+                if (playBtn) playBtn.innerHTML = "&#9654; AUTO-PLAY (30s)";
+                return;
+            }
+            if (playBtn) playBtn.innerHTML = "&#9632; PAUSE TOUR";
+            goToWorkflowStep(1);
+            workflowAutoPlayTimer = setInterval(() => {
+                if (currentWorkflowStep >= 5) {
+                    clearInterval(workflowAutoPlayTimer);
+                    workflowAutoPlayTimer = null;
+                    if (playBtn) playBtn.innerHTML = "&#9654; REPLAY (30s)";
+                } else {
+                    goToWorkflowStep(currentWorkflowStep + 1);
+                }
+            }, 6000);
+        }
+
+        function renderWorkflowStep(step) {
+            const container = document.getElementById("workflowStepContent");
+            const badge = document.getElementById("currentStepBadge");
+            if (!container) return;
+
+            if (step === 1) {
+                if (badge) badge.innerText = "STEP 1 OF 5 · ADMIN SIGN-IN & FLIGHT MISSION CONTEXT";
+                switchMainWorkspace("console");
+                transitionToState("inspection");
+                speakSpeech("Step 1: Lead Avionics Engineer Sarah Chen signs into the pre-power safety console. Launch in T-48 hours.");
+                container.innerHTML = `
+                    <div style="display:grid; grid-template-columns: 1fr 1.3fr; gap:24px; align-items:center;">
+                        <!-- Left: Cleanroom Security Badge & Flight Context -->
+                        <div style="background:rgba(0,0,0,0.45); border:1px solid rgba(59,130,246,0.3); border-radius:10px; padding:18px; font-family:'JetBrains Mono',monospace;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">
+                                <span style="font-weight:700; color:#93C5FD;">AVIONICS CLEANROOM ACCESS PASS</span>
+                                <span style="font-size:9px; background:rgba(59,130,246,0.2); color:#93C5FD; padding:2px 6px; border-radius:4px;">SECURITY LEVEL 4</span>
+                            </div>
+                            <div style="font-size:12px; color:#FFF; margin-bottom:4px;"><strong>ENGINEER:</strong> Sarah Chen (Lead Avionics Integration)</div>
+                            <div style="font-size:11px; color:rgba(255,255,255,0.7); margin-bottom:4px;"><strong>STATION:</strong> Falcon SMT Line 4 &middot; Rework Bay RW-02</div>
+                            <div style="font-size:11px; color:#FBBF24; margin-bottom:10px;"><strong>HARDWARE UNDER TEST:</strong> STM32H743-AERO-FC ($10,000 Flight Prototype)</div>
+                            <div style="font-size:10px; color:#F87171; line-height:1.5; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); border-radius:6px; padding:8px;">
+                                &#9888; <strong>CRITICAL MISSION RISK:</strong> Over 75% of flight computer burnouts occur in the first 15ms of power-up. Microscopic solder bridges short out low-impedance rails before standard fuses can blow.
+                            </div>
+                        </div>
+
+                        <!-- Right: Plain-English Operational Briefing -->
+                        <div>
+                            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#38BDF8; font-weight:700; margin-bottom:4px;">
+                                STAGE 1 &middot; BOARD CARRIER PLACEMENT
+                            </div>
+                            <div style="font-size:15px; font-weight:700; color:#FFF; margin-bottom:8px;">
+                                Pre-Power Optical Gate Armed
+                            </div>
+                            <p style="font-size:12px; line-height:1.6; color:rgba(255,255,255,0.8); margin-bottom:16px;">
+                                Sarah Chen sets the unpowered PCBA into the inspection carrier. OmniInspect locks the high-voltage 24V contactor mechanically open: <strong>zero power can flow</strong> until sub-pixel visual reasoning diffs every pin against the KiCad netlist.
+                            </p>
+                            <div style="display:flex; gap:10px;">
+                                <button onclick="navigateWorkflow(1)" class="btn-primary" style="padding:8px 18px; font-size:11px; font-weight:700; cursor:pointer;">
+                                    START OPTICAL SCAN &rarr;
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (step === 2) {
+                if (badge) badge.innerText = "STEP 2 OF 5 · OPTICAL MACRO SCAN & META MUSE SPATIAL REASONING";
+                switchMainWorkspace("console");
+                transitionToState("fault");
+                toggleCompareMode(2, "before");
+                speakSpeech("Step 2: Optical scan complete. Meta Muse on Baseten identifies Pin 48 and 49 solder bridge.");
+                container.innerHTML = `
+                    <div style="display:grid; grid-template-columns: 1fr 1.3fr; gap:24px; align-items:center;">
+                        <!-- Left: Macro Image Frame with Defect Callout -->
+                        <div style="background:rgba(0,0,0,0.45); border:1px solid rgba(239,68,68,0.4); border-radius:10px; padding:14px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; color:#EF4444;">
+                                    [IMAGE 1: BEFORE REWORK &middot; SOLDER BRIDGE PRESENT]
+                                </span>
+                                <span style="font-size:9px; background:rgba(239,68,68,0.2); color:#EF4444; padding:2px 6px; border-radius:4px; font-weight:700;">
+                                    DEFECT CONFIRMED
+                                </span>
+                            </div>
+                            <div style="height:170px; border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); margin-bottom:8px; position:relative;">
+                                <img src="/static/board_inspection_macro.jpg" style="width:100%; height:100%; object-fit:cover;">
+                                <div style="position:absolute; top:45%; left:48.5%; width:72px; height:60px; border:2px solid #EF4444; box-shadow:0 0 16px rgba(239,68,68,0.6); border-radius:4px;"></div>
+                            </div>
+                            <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:#EF4444; font-weight:600;">
+                                &#9889; Silver metallic bridge shorting Pin 48 (+3V3_MCU) to Pin 49 (GND_ISO).
+                            </div>
+                        </div>
+
+                        <!-- Right: Where Meta Muse & Baseten Are Used -->
+                        <div>
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; background:rgba(168,85,247,0.2); border:1px solid #A855F7; color:#D8B4FE; padding:2px 8px; border-radius:4px; font-weight:700;">
+                                    &#129504; MODEL IN ACTION: META MUSE ON BASETEN
+                                </span>
+                            </div>
+                            <div style="font-size:15px; font-weight:700; color:#FFF; margin-bottom:8px;">
+                                Sub-Pixel Pin ROI Tokenization &amp; Netlist Diff
+                            </div>
+                            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; line-height:1.6; color:rgba(255,255,255,0.85); background:rgba(15,23,42,0.7); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:10px; margin-bottom:14px;">
+                                &bull; <strong>Hosting:</strong> Baseten cloud inference cluster (48ms token latency)<br>
+                                &bull; <strong>Spatial Crop:</strong> MCU U14 pins localized at coordinates [X: 660..750, Y: 340..420]<br>
+                                &bull; <strong>CAD Cross-Probe:</strong> Pin 48 (+3V3 logic) is connected to Pin 49 (GND)<br>
+                                &bull; <strong>IPC Standard:</strong> Meniscus clearance = 0.00mm (&lt; 0.20mm requirement) &rarr; <span style="color:#EF4444; font-weight:700;">REJECTION</span>
+                            </div>
+                            <div style="display:flex; gap:10px;">
+                                <button onclick="navigateWorkflow(1)" class="btn-primary" style="padding:8px 18px; font-size:11px; font-weight:700; cursor:pointer;">
+                                    OBSERVE INTERLOCK PROTECTION &rarr;
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (step === 3) {
+                if (badge) badge.innerText = "STEP 3 OF 5 · 1.52ms AUTONOMOUS HARDWARE INTERLOCK TRIP";
+                switchMainWorkspace("interlock");
+                speakSpeech("Step 3: FastTree interlock trips solid-state relays in 1.52 milliseconds. Power clamped to zero volts. Silicon die saved.");
+                container.innerHTML = `
+                    <div style="display:grid; grid-template-columns: 1fr 1.3fr; gap:24px; align-items:center;">
+                        <!-- Left: Hardware Relays Clamped to Zero -->
+                        <div style="background:rgba(0,0,0,0.45); border:1px solid rgba(239,68,68,0.4); border-radius:10px; padding:16px;">
+                            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#EF4444; font-weight:700; margin-bottom:10px;">
+                                PHYSICAL HARDWARE STATUS &middot; RELAY LATCHED OPEN
+                            </div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">
+                                <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:6px; padding:10px; text-align:center;">
+                                    <div style="font-size:9px; color:rgba(255,255,255,0.6);">24V POWER BUS</div>
+                                    <div class="mono-num" style="font-size:22px; font-weight:700; color:#EF4444;">0.00 V</div>
+                                    <div style="font-size:8px; color:#EF4444; font-weight:700;">CLAMPED / DISARMED</div>
+                                </div>
+                                <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:6px; padding:10px; text-align:center;">
+                                    <div style="font-size:9px; color:rgba(255,255,255,0.6);">INTERLOCK TRIP TIME</div>
+                                    <div class="mono-num" style="font-size:22px; font-weight:700; color:#38BDF8;">1.52 ms</div>
+                                    <div style="font-size:8px; color:#38BDF8; font-weight:700;">&lt; 5.0ms SPEC PASS</div>
+                                </div>
+                            </div>
+                            <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,255,255,0.7); line-height:1.5;">
+                                &bull; Actuation: Crydom D2425 Solid State Relay de-energized in 1.10&micro;s.<br>
+                                &bull; Acoustic Signature: 18.4 kHz micro-arc burst intercepted 142ms early.
+                            </div>
+                        </div>
+
+                        <!-- Right: Why This Is a Breakthrough -->
+                        <div>
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; background:rgba(56,189,248,0.2); border:1px solid #38BDF8; color:#7DD3FC; padding:2px 8px; border-radius:4px; font-weight:700;">
+                                    &#9889; HARDWARE IN ACTION: TI INA229 ADC + FASTTREE KERNEL
+                                </span>
+                            </div>
+                            <div style="font-size:15px; font-weight:700; color:#FFF; margin-bottom:8px;">
+                                Prototype Protected: Power Pre-Emptively Blocked
+                            </div>
+                            <p style="font-size:12px; line-height:1.6; color:rgba(255,255,255,0.85); margin-bottom:14px;">
+                                In an ordinary laboratory, an operator flips the switch, a thermal fuse takes 200ms to blow, and the $10,000 microcontroller is fried. With OmniInspect, <strong>power was never applied</strong>. The board is completely undamaged and ready for physical desoldering.
+                            </p>
+                            <div style="display:flex; gap:10px;">
+                                <button onclick="navigateWorkflow(1)" class="btn-primary" style="padding:8px 18px; font-size:11px; font-weight:700; cursor:pointer;">
+                                    SIMULATE TECHNICIAN REWORK &rarr;
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (step === 4) {
+                if (badge) badge.innerText = "STEP 4 OF 5 · PHYSICAL SMT DESOLDERING REWORK";
+                switchMainWorkspace("console");
+                speakSpeech("Step 4: Physical reality. SMT technician uses flux and copper braid wick to physically remove the bridge.");
+                container.innerHTML = `
+                    <div style="display:grid; grid-template-columns: 1fr 1.3fr; gap:24px; align-items:center;">
+                        <!-- Left: Physical Desoldering Sequence -->
+                        <div style="background:rgba(0,0,0,0.45); border:1px solid rgba(251,191,36,0.35); border-radius:10px; padding:16px;">
+                            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#FBBF24; font-weight:700; margin-bottom:10px;">
+                                BENCH PROCEDURE &middot; 4-STEP SMT DESOLDERING
+                            </div>
+                            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; line-height:1.7; color:rgba(255,255,255,0.85);">
+                                <div style="margin-bottom:6px;"><span style="color:#FBBF24; font-weight:700;">1. FLUX APPLICATION:</span> Apply no-clean rosin flux across Pin 48-49.</div>
+                                <div style="margin-bottom:6px;"><span style="color:#FBBF24; font-weight:700;">2. COPPER WICK:</span> Place heated copper braid over bridged leads at 350&deg;C.</div>
+                                <div style="margin-bottom:6px;"><span style="color:#FBBF24; font-weight:700;">3. CAPILLARY DRAW:</span> Molten excess solder is drawn cleanly into braid weave.</div>
+                                <div><span style="color:#30D158; font-weight:700;">4. AIR GAP RESTORED:</span> Solder bridge physically removed. Pins isolated!</div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Clarifying Software vs Hardware Reality -->
+                        <div>
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; background:rgba(251,191,36,0.2); border:1px solid #FBBF24; color:#FDE68A; padding:2px 8px; border-radius:4px; font-weight:700;">
+                                    &#128295; HUMAN SMT TECHNICIAN IN ACTION
+                                </span>
+                            </div>
+                            <div style="font-size:15px; font-weight:700; color:#FFF; margin-bottom:8px;">
+                                How the Solder Bridge is Physically Removed
+                            </div>
+                            <p style="font-size:12px; line-height:1.6; color:rgba(255,255,255,0.85); margin-bottom:14px;">
+                                Software cannot melt metal through a screen. A skilled technician physically clears the solder blob. Once the rework is done, the technician puts the board back under the camera to <strong>prove</strong> the clearance before power is authorized.
+                            </p>
+                            <div style="display:flex; gap:10px;">
+                                <button onclick="navigateWorkflow(1)" class="btn-primary" style="padding:8px 18px; font-size:11px; font-weight:700; cursor:pointer;">
+                                    RE-SCAN BOARD &amp; AUTHORIZE POWER &rarr;
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (step === 5) {
+                if (badge) badge.innerText = "STEP 5 OF 5 · RE-SCAN VERIFIED, 24V ENERGIZED & MODAL AUDIT";
+                switchMainWorkspace("console");
+                transitionToState("nominal");
+                toggleCompareMode(3, "after");
+                speakSpeech("Step 5: Re-scan pass. 0.24mm air gap verified. Power authorized. 24V bus energized. Modal cloud black box sealed.");
+                container.innerHTML = `
+                    <div style="display:grid; grid-template-columns: 1fr 1.3fr; gap:24px; align-items:center;">
+                        <!-- Left: Clean Image 2 with Green Bounding Box -->
+                        <div style="background:rgba(0,0,0,0.45); border:1px solid rgba(48,209,88,0.4); border-radius:10px; padding:14px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; color:#30D158;">
+                                    [IMAGE 2: AFTER REWORK &middot; VERIFIED CLEAN AIR GAP]
+                                </span>
+                                <span style="font-size:9px; background:rgba(48,209,88,0.2); color:#30D158; padding:2px 6px; border-radius:4px; font-weight:700;">
+                                    PASSED
+                                </span>
+                            </div>
+                            <div style="height:170px; border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.1); margin-bottom:8px; position:relative;">
+                                <img src="/static/board_inspection_clean.jpg" style="width:100%; height:100%; object-fit:cover;">
+                                <div style="position:absolute; top:45%; left:48.5%; width:72px; height:60px; border:2px solid #30D158; box-shadow:0 0 16px rgba(48,209,88,0.6); border-radius:4px;"></div>
+                            </div>
+                            <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:#30D158; font-weight:600;">
+                                &#10003; 0.24mm clean air gap verified between Pin 48 and Pin 49. Fillets intact!
+                            </div>
+                        </div>
+
+                        <!-- Right: Power Authorized & Modal Serverless Audit -->
+                        <div>
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; background:rgba(16,185,129,0.2); border:1px solid #10B981; color:#6EE7B7; padding:2px 8px; border-radius:4px; font-weight:700;">
+                                    &#9889; MODAL SERVERLESS + META MUSE PASSED
+                                </span>
+                            </div>
+                            <div style="font-size:15px; font-weight:700; color:#FFF; margin-bottom:8px;">
+                                Power Authorized: 24V Bus Energized Safely
+                            </div>
+                            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; line-height:1.6; color:rgba(255,255,255,0.85); background:rgba(15,23,42,0.7); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:10px; margin-bottom:14px;">
+                                &bull; <strong>Optical Gate:</strong> Meta Muse confirmed 0.24mm gap &ge; 0.20mm requirement<br>
+                                &bull; <strong>Power Relays:</strong> Closed! 24V bus powered up to nominal 24.16V (4.32A load)<br>
+                                &bull; <strong>Modal Serverless:</strong> Ran Monte Carlo transient audit on shivaclick14 cluster<br>
+                                &bull; <strong>Black Box Audit:</strong> Sealed with SHA-256 cryptographic digest
+                            </div>
+                            <div style="display:flex; gap:10px;">
+                                <a href="/report" target="_blank" class="btn-primary" style="padding:8px 18px; font-size:11px; font-weight:700; text-decoration:none; cursor:pointer;">
+                                    &#128196; OPEN PRINTABLE RCA REPORT
+                                </a>
+                                <button onclick="goToWorkflowStep(1)" class="tab-btn" style="padding:8px 14px; font-size:10px; cursor:pointer;">
+                                    &#8635; REPLAY FROM STEP 1
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
 
         // Switch Between 4 Main Workspaces
         let currentWorkspace = "console";
