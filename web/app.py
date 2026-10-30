@@ -1278,13 +1278,25 @@ async def serve_dashboard_v8():
         <div class="brand-cluster">
             <div class="brand-logo-icon">OI</div>
             <div>
-                <div class="brand-title">OmniInspect AI</div>
-                <div class="brand-subtitle">Pre-Power Optical Safety Gate &middot; STM32H743-AERO-FC</div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <div class="brand-title">OmniInspect AI</div>
+                    <span style="font-family:'JetBrains Mono',monospace; font-size:9px; background:rgba(59,130,246,0.18); border:1px solid rgba(59,130,246,0.4); color:#93C5FD; padding:2px 6px; border-radius:4px; font-weight:600;">DEMO-INSURED &middot; ZERO LATENCY</span>
+                </div>
+                <div class="brand-subtitle">
+                    <span style="color:#F87171; font-weight:600;">HERO PERSONA:</span> Sarah Chen (Lead Avionics Integration) &middot; <span style="color:#38BDF8;">FLIGHT HARDWARE:</span> STM32H743-AERO-FC &middot; <span style="color:#FBBF24;">LAUNCH WINDOW:</span> T-48h
+                </div>
             </div>
         </div>
 
-        <!-- Defect Preset Switcher & Audio Controls -->
-        <div style="display:flex; align-items:center; gap:12px;">
+        <!-- Defect Preset Switcher, Sponsor Badges & Audio Controls -->
+        <div style="display:flex; align-items:center; gap:10px;">
+            <!-- Sponsor Multi-Dip Badges -->
+            <div style="display:flex; align-items:center; gap:5px; margin-right:4px;">
+                <span style="font-family:'JetBrains Mono',monospace; font-size:9px; background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.35); color:#D8B4FE; padding:3px 7px; border-radius:4px;">&#129504; META MUSE</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:9px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.35); color:#6EE7B7; padding:3px 7px; border-radius:4px;">&#9889; MODAL CLOUD</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:9px; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.35); color:#7DD3FC; padding:3px 7px; border-radius:4px;">&#9881; BASETEN</span>
+            </div>
+
             <select id="presetSelect" onchange="changePreset(this.value)" class="tab-btn" style="background:#0F172A; border-color:rgba(255,255,255,0.22); color:#FFF; font-weight:600;">
                 <option value="u14_bridge">PRESET 1: U14 MCU SOLDER BRIDGE (PIN 48-49)</option>
                 <option value="c24_polarity">PRESET 2: C24 TANTALUM REVERSE POLARITY</option>
@@ -2017,8 +2029,8 @@ async def serve_dashboard_v8():
     <!-- Bottom Footnote Strip -->
     <div class="footnote-strip">
         <span>OMNIINSPECT AI &middot; CYBER-PHYSICAL INTERLOCK v8.0</span>
-        <span>TELEMETRY SIMULATION LAYER &middot; READY FOR 100 kSPS SPI INGEST</span>
-        <span>IPC-A-610G CLASS 3 &middot; SHA-256 AUDIT VERIFIED</span>
+        <span>SPONSORS: META MUSE / LLAMA 3.2 &middot; MODAL SERVERLESS (LIVE: shivaclick14) &middot; BASETEN AI &middot; FASTCLOCK 100kSPS</span>
+        <span>DEMO MODE ACTIVE &middot; IPC-A-610G CLASS 3 &middot; SHA-256 SEALED</span>
     </div>
 
     <!-- Client-Side Script: WebSocket & State Machine -->
