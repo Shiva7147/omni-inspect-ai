@@ -1074,23 +1074,25 @@ async def serve_dashboard_v8():
         /* Bounding Box on Defect */
         .bbox-fault {
             position: absolute;
-            top: 42%;
-            left: 48%;
-            width: 90px;
+            top: 45%;
+            left: 48.5%;
+            width: 72px;
             height: 60px;
             border: 2px solid var(--color-fault);
             box-shadow: 0 0 20px rgba(255, 59, 48, 0.5);
             pointer-events: none;
+            border-radius: 4px;
         }
         .bbox-nominal {
             position: absolute;
-            top: 42%;
-            left: 48%;
-            width: 90px;
+            top: 45%;
+            left: 48.5%;
+            width: 72px;
             height: 60px;
             border: 2px solid var(--color-clear);
             box-shadow: 0 0 20px rgba(48, 209, 88, 0.5);
             pointer-events: none;
+            border-radius: 4px;
         }
 
         .image-status-bar {
@@ -1257,6 +1259,51 @@ async def serve_dashboard_v8():
             color: #FFF;
         }
 
+        /* 3-State Direct Navigation Pills */
+        .state-nav-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.65);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .state-nav-btn span {
+            font-size: 8px;
+            padding: 1px 5px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .state-nav-btn:hover {
+            color: #FFF;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .state-nav-btn.active-inspect {
+            background: rgba(251, 191, 36, 0.2);
+            color: #FBBF24;
+            font-weight: 700;
+            box-shadow: 0 0 14px rgba(251, 191, 36, 0.25);
+        }
+        .state-nav-btn.active-fault {
+            background: rgba(239, 68, 68, 0.25);
+            color: #FF453A;
+            font-weight: 700;
+            box-shadow: 0 0 16px rgba(239, 68, 68, 0.35);
+        }
+        .state-nav-btn.active-nominal {
+            background: rgba(48, 209, 88, 0.25);
+            color: #30D158;
+            font-weight: 700;
+            box-shadow: 0 0 16px rgba(48, 209, 88, 0.35);
+        }
+
         /* Footnote */
         .footnote-strip {
             position: relative;
@@ -1273,42 +1320,52 @@ async def serve_dashboard_v8():
 <body>
     <div class="fixed-bg"></div>
 
-    <!-- Top Header -->
+    <!-- Top Header: Clean, Uncluttered, Direct Navigation -->
     <header>
         <div class="brand-cluster">
             <div class="brand-logo-icon">OI</div>
             <div>
                 <div style="display:flex; align-items:center; gap:8px;">
                     <div class="brand-title">OmniInspect AI</div>
-                    <span style="font-family:'JetBrains Mono',monospace; font-size:9px; background:rgba(59,130,246,0.18); border:1px solid rgba(59,130,246,0.4); color:#93C5FD; padding:2px 6px; border-radius:4px; font-weight:600;">DEMO-INSURED &middot; ZERO LATENCY</span>
+                    <span style="font-family:'JetBrains Mono',monospace; font-size:9px; background:rgba(59,130,246,0.18); border:1px solid rgba(59,130,246,0.4); color:#93C5FD; padding:2px 8px; border-radius:12px; font-weight:700;">AUTONOMOUS SAFETY GATE</span>
                 </div>
                 <div class="brand-subtitle">
-                    <span style="color:#F87171; font-weight:600;">HERO PERSONA:</span> Sarah Chen (Lead Avionics Integration) &middot; <span style="color:#38BDF8;">FLIGHT HARDWARE:</span> STM32H743-AERO-FC &middot; <span style="color:#FBBF24;">LAUNCH WINDOW:</span> T-48h
+                    Sarah Chen (Lead Avionics) &middot; STM32H743-AERO &middot; Launch T-48h
                 </div>
             </div>
         </div>
 
-        <!-- Defect Preset Switcher, Sponsor Badges & Audio Controls -->
-        <div style="display:flex; align-items:center; gap:10px;">
-            <!-- Sponsor Multi-Dip Badges -->
-            <div style="display:flex; align-items:center; gap:5px; margin-right:4px;">
-                <span style="font-family:'JetBrains Mono',monospace; font-size:9px; background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.35); color:#D8B4FE; padding:3px 7px; border-radius:4px;">&#129504; META MUSE</span>
-                <span style="font-family:'JetBrains Mono',monospace; font-size:9px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.35); color:#6EE7B7; padding:3px 7px; border-radius:4px;">&#9889; MODAL CLOUD</span>
-                <span style="font-family:'JetBrains Mono',monospace; font-size:9px; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.35); color:#7DD3FC; padding:3px 7px; border-radius:4px;">&#9881; BASETEN</span>
-            </div>
+        <!-- 3-State Direct Segmented Switcher (Hero Control) -->
+        <div style="display:flex; align-items:center; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.14); border-radius:10px; padding:3px; gap:4px;">
+            <button id="navState1" onclick="transitionToState('inspection')" class="state-nav-btn" title="View Initial Optical Alignment">
+                <span>01</span> SCANNING
+            </button>
+            <button id="navState2" onclick="transitionToState('fault')" class="state-nav-btn active-fault" title="View Solder Bridge Interlock Trip">
+                <span>02</span> FAULT LOCKED
+            </button>
+            <button id="navState3" onclick="transitionToState('nominal')" class="state-nav-btn" title="View Rework Verified Safe Power-Up">
+                <span>03</span> REWORK CLEARED
+            </button>
+        </div>
 
-            <select id="presetSelect" onchange="changePreset(this.value)" class="tab-btn" style="background:#0F172A; border-color:rgba(255,255,255,0.22); color:#FFF; font-weight:600;">
-                <option value="u14_bridge">PRESET 1: U14 MCU SOLDER BRIDGE (PIN 48-49)</option>
-                <option value="c24_polarity">PRESET 2: C24 TANTALUM REVERSE POLARITY</option>
-                <option value="q3_void">PRESET 3: Q3 POWER MOSFET SOLDER VOID</option>
-            </select>
-
-            <button id="audioToggleBtn" onclick="toggleAudio()" class="btn-secondary" style="padding:6px 14px; font-size:10px; display:flex; align-items:center; gap:6px;">
-                <span id="audioIcon">&#128266;</span> <span id="audioStatus">AUDIO: ON</span>
+        <!-- Right Quick Controls -->
+        <div style="display:flex; align-items:center; gap:8px;">
+            <button onclick="runGuidedJudgeTour()" class="btn-primary" style="padding:7px 14px; font-size:11px; font-weight:700; border-radius:8px; display:flex; align-items:center; gap:6px; background:linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%); cursor:pointer;">
+                <span>&#9654;</span> <span>RUN 30s TOUR</span>
             </button>
 
-            <button onclick="openDropzoneModal()" class="btn-secondary" style="padding:6px 14px; font-size:10px;">
-                &#128193; TEST CUSTOM IMAGE
+            <select id="presetSelect" onchange="changePreset(this.value)" class="tab-btn" style="background:#0F172A; border-color:rgba(255,255,255,0.22); color:#FFF; font-weight:600; font-size:10px; padding:6px 10px;">
+                <option value="u14_bridge">PRESET 1: U14 MCU BRIDGE (PIN 48-49)</option>
+                <option value="c24_polarity">PRESET 2: C24 TANTALUM REVERSE</option>
+                <option value="q3_void">PRESET 3: Q3 MOSFET SOLDER VOID</option>
+            </select>
+
+            <button onclick="openDropzoneModal()" class="btn-secondary" style="padding:6px 10px; font-size:10px;" title="Upload custom photo">
+                &#128193; TEST IMAGE
+            </button>
+
+            <button id="audioToggleBtn" onclick="toggleAudio()" class="btn-secondary" style="padding:6px 10px; font-size:10px;" title="Audio Narration">
+                <span id="audioIcon">&#128266;</span>
             </button>
 
             <div id="topStateBeacon" class="state-beacon beacon-fault">
@@ -1319,66 +1376,60 @@ async def serve_dashboard_v8():
     </header>
 
     <!-- ==================================================================== -->
-    <!-- HERO MISSION & PROBLEM STATEMENT: 5-SECOND COMPREHENSION BANNER       -->
+    <!-- HIGH-IMPACT 3-CARD MISSION HUD (CLEAN & EFFORTLESS TO UNDERSTAND)    -->
     <!-- ==================================================================== -->
-    <section class="glass-panel" style="margin: 0 40px 18px 40px; padding: 18px 24px; border-color: rgba(255, 255, 255, 0.16); background: rgba(15, 23, 42, 0.75); position: relative; z-index: 10;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap;">
-            <!-- Problem vs Solution Columns -->
-            <div style="flex: 1; min-width: 300px;">
-                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#FF3B30; box-shadow:0 0 8px #FF3B30;"></span>
-                    <span class="label-caps" style="color:#FF3B30; font-weight:700; letter-spacing:0.12em;">THE FIRST POWER-ON CATASTROPHE (PROBLEM)</span>
+    <section style="margin: 0 40px 14px 40px;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1.3fr auto; gap:12px; align-items:stretch;">
+            <!-- Card 1: Problem / Hazard -->
+            <div class="glass-panel" style="padding:10px 16px; border-left:3px solid #EF4444; background:rgba(239,68,68,0.07); display:flex; flex-direction:column; justify-content:center;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+                    <span style="width:6px; height:6px; border-radius:50%; background:#EF4444; box-shadow:0 0 6px #EF4444;"></span>
+                    <span style="font-size:9px; font-weight:700; color:#EF4444; letter-spacing:0.08em; font-family:'JetBrains Mono',monospace;">CRITICAL HAZARD</span>
                 </div>
-                <p style="font-size:12px; line-height:1.6; color:rgba(255,255,255,0.85);">
-                    <strong style="color:#FFF;">Over 75% of fatal aerospace and robotics PCB burnouts occur within the first 15 milliseconds of power-up.</strong> 
-                    A microscopic 0.24mm solder bridge between <span class="mono-num" style="color:#38BDF8;">+3V3_MCU</span> and <span class="mono-num" style="color:#F43F5E;">GND_ISO</span> instantly vaporizes multi-thousand-dollar prototypes before standard fuses or human operators can ever react.
-                </p>
+                <div style="font-size:12px; font-weight:700; color:#FFF;">0.24mm Solder Bridge (Pin 48-49)</div>
+                <div style="font-size:10px; color:rgba(255,255,255,0.7);">Direct short: +3V3 logic supply to GND</div>
             </div>
 
-            <div style="flex: 1; min-width: 300px;">
-                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#30D158; box-shadow:0 0 8px #30D158;"></span>
-                    <span class="label-caps" style="color:#30D158; font-weight:700; letter-spacing:0.12em;">THE DUAL-LAYER AUTONOMOUS SHIELD (SOLUTION)</span>
+            <!-- Card 2: Risk / Burnout -->
+            <div class="glass-panel" style="padding:10px 16px; border-left:3px solid #F59E0B; background:rgba(245,158,11,0.07); display:flex; flex-direction:column; justify-content:center;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+                    <span style="width:6px; height:6px; border-radius:50%; background:#F59E0B; box-shadow:0 0 6px #F59E0B;"></span>
+                    <span style="font-size:9px; font-weight:700; color:#F59E0B; letter-spacing:0.08em; font-family:'JetBrains Mono',monospace;">CONVENTIONAL RISK</span>
                 </div>
-                <p style="font-size:12px; line-height:1.6; color:rgba(255,255,255,0.85);">
-                    <strong style="color:#FFF;">OmniInspect AI deploys an autonomous cyber-physical safety gate:</strong> 
-                    <span style="color:#38BDF8; font-weight:600;">Layer 1 (Pre-Power Gate)</span> locks power contactors open until sub-pixel optical macro alignment + CAD KiCad netlist diffing + Meta Muse visual reasoning verifies 100% clearance. 
-                    <span style="color:#FBBF24; font-weight:600;">Layer 2 (100kSPS Signal Interlock)</span> predicts micro-arc harmonic anomalies to trip solid-state relays in <span class="mono-num" style="color:#30D158; font-weight:700;">1.52 ms</span>.
-                </p>
+                <div style="font-size:12px; font-weight:700; color:#FFF;">15ms Silicon Vaporization</div>
+                <div style="font-size:10px; color:rgba(255,255,255,0.7);">Fuses take &gt; 200ms &mdash; board destroyed</div>
             </div>
 
-            <!-- Quick Action / Interactive Tour Trigger -->
-            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-                <button onclick="runGuidedJudgeTour()" class="btn-primary" style="padding: 10px 18px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; display:flex; align-items:center; gap:8px; background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%); box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4); cursor:pointer;">
-                    <span>&#9654;</span> <span>RUN 30-SEC JUDGE TOUR</span>
+            <!-- Card 3: Autonomous Defense -->
+            <div class="glass-panel" style="padding:10px 16px; border-left:3px solid #10B981; background:rgba(16,185,129,0.07); display:flex; flex-direction:column; justify-content:center;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+                    <span style="width:6px; height:6px; border-radius:50%; background:#10B981; box-shadow:0 0 6px #10B981;"></span>
+                    <span style="font-size:9px; font-weight:700; color:#10B981; letter-spacing:0.08em; font-family:'JetBrains Mono',monospace;">OMNIINSPECT SHIELD</span>
+                </div>
+                <div style="font-size:12px; font-weight:700; color:#FFF;">1.52ms Edge Cutoff + Optical Lock</div>
+                <div style="font-size:10px; color:rgba(255,255,255,0.7);">Dual-layer interlock: relays locked until cleared</div>
+            </div>
+
+            <!-- Card 4: Quick Info Drawer Toggle -->
+            <div style="display:flex; align-items:center;">
+                <button onclick="toggleMissionDetails()" class="tab-btn" style="padding:10px 14px; font-size:10px; display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.18); color:#CBD5E1; border-radius:8px; cursor:pointer;" id="missionToggleBtn">
+                    <span>&#9432;</span> <span>MISSION CONTEXT</span> <span id="missionToggleArrow">&#9662;</span>
                 </button>
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <span style="width:6px; height:6px; border-radius:50%; background:#30D158; box-shadow:0 0 6px #30D158;"></span>
-                    <span class="mono-num" style="font-size:9px; color:rgba(255,255,255,0.6);">STATION-EDGE-01: ARMED (1.52ms TRIP)</span>
-                </div>
             </div>
         </div>
 
-        <!-- 4-Step Visual Flow Diagram -->
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); overflow-x: auto; gap: 12px;">
-            <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); padding:3px 8px; border-radius:6px; color:#93C5FD;">01 &middot; OPTICAL SCAN</span>
-                <span style="font-size:11px; color:rgba(255,255,255,0.7);">Carrier Sub-Pixel Alignment</span>
+        <!-- Expandable Deep Technical Context Drawer -->
+        <div id="missionDetailDrawer" style="display:none; margin-top:10px; padding:14px 18px; border-radius:8px; background:rgba(15,23,42,0.92); border:1px solid rgba(255,255,255,0.14); font-size:11px; line-height:1.6; color:rgba(255,255,255,0.85);">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                <div>
+                    <strong style="color:#EF4444;">THE FIRST POWER-ON PROBLEM:</strong> Over 75% of fatal aerospace and robotics PCB burnouts occur within the first 15 milliseconds of power-up. A microscopic 0.24mm solder bridge between <span class="mono-num" style="color:#38BDF8;">+3V3_MCU</span> and <span class="mono-num" style="color:#F43F5E;">GND_ISO</span> instantly vaporizes multi-thousand-dollar prototypes before standard fuses or human operators can ever react.
+                </div>
+                <div>
+                    <strong style="color:#10B981;">THE DUAL-LAYER SOLUTION:</strong> OmniInspect AI couples sub-pixel computer vision + Meta Muse netlist graph reasoning (Layer 1 Pre-Power Gate) with a 100kSPS predictive RF micro-arc acoustic interlock (Layer 2 In-Flight Protection) running on edge hardware to cut power contactors in <span class="mono-num" style="color:#10B981; font-weight:700;">1.52 ms</span>.
+                </div>
             </div>
-            <span style="color:rgba(255,255,255,0.3); font-size:14px; flex-shrink:0;">&rarr;</span>
-            <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.35); padding:3px 8px; border-radius:6px; color:#D8B4FE;">02 &middot; MUSE NEURAL REASONING</span>
-                <span style="font-size:11px; color:rgba(255,255,255,0.7);">CAD Netlist Diff &amp; IPC-A-610G</span>
-            </div>
-            <span style="color:rgba(255,255,255,0.3); font-size:14px; flex-shrink:0;">&rarr;</span>
-            <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; background:rgba(251,191,36,0.15); border:1px solid rgba(251,191,36,0.35); padding:3px 8px; border-radius:6px; color:#FDE68A;">03 &middot; 100kSPS ML PREDICTOR</span>
-                <span style="font-size:11px; color:rgba(255,255,255,0.7);">FastTree 1.52ms Interlock Cutoff</span>
-            </div>
-            <span style="color:rgba(255,255,255,0.3); font-size:14px; flex-shrink:0;">&rarr;</span>
-            <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; background:rgba(48,209,88,0.15); border:1px solid rgba(48,209,88,0.35); padding:3px 8px; border-radius:6px; color:#86EFAC;">04 &middot; BLACK BOX AUDIT</span>
-                <span style="font-size:11px; color:rgba(255,255,255,0.7);">Cryptographic SHA-256 Seal</span>
+            <div style="display:flex; align-items:center; gap:12px; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.08); font-family:'JetBrains Mono',monospace; font-size:9px; color:#94A3B8;">
+                <span>TECH STACK: Meta Muse &middot; Modal Serverless &middot; Baseten AI &middot; 100kSPS Edge Kernel &middot; SHA-256 Audit Trail</span>
             </div>
         </div>
     </section>
@@ -1449,10 +1500,25 @@ async def serve_dashboard_v8():
                             <span class="label-caps" id="s2ActiveLayerLabel" style="color:var(--color-fault);">OPTICAL IN-CIRCUIT GATE</span>
                         </div>
 
+                        <!-- Interactive Before/After Toggle Controls for State 2 -->
+                        <div id="s2CompareControls" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <div style="display:flex; gap:6px;">
+                                <button onclick="toggleCompareMode(2, 'before')" id="s2BtnBefore" class="tab-btn active-tab" style="padding:4px 10px; font-size:10px; font-weight:700; border-color:#EF4444; color:#FF453A;">
+                                    &#128308; BEFORE (SOLDER BRIDGE)
+                                </button>
+                                <button onclick="toggleCompareMode(2, 'after')" id="s2BtnAfter" class="tab-btn" style="padding:4px 10px; font-size:10px; font-weight:700; border-color:rgba(255,255,255,0.2); color:#94A3B8;">
+                                    &#128994; AFTER (REWORK PREVIEW)
+                                </button>
+                            </div>
+                            <span id="s2CompareLabel" style="font-family:'JetBrains Mono',monospace; font-size:9px; color:#EF4444; font-weight:600;">
+                                DEFECT: 0.24mm SOLDER BRIDGE SHORT
+                            </span>
+                        </div>
+
                         <!-- Layer 1 View: Macro Image with Red Bounding Box -->
                         <div id="s2ImgWrapper" class="image-container">
                             <img id="s2MacroImg" src="/static/board_inspection_macro.jpg" alt="Fault Detected Board">
-                            <div class="bbox-fault"></div>
+                            <div id="s2BBox" class="bbox-fault"></div>
                         </div>
 
                         <!-- Layer 2 View: Real-Time Oscilloscope & FFT Spectrum + ML Learning Explainer -->
@@ -1772,10 +1838,25 @@ async def serve_dashboard_v8():
                             <span class="label-caps" id="s3ActiveLayerLabel" style="color:var(--color-clear);">REWORK VERIFIED</span>
                         </div>
 
+                        <!-- Interactive Before/After Toggle Controls for State 3 -->
+                        <div id="s3CompareControls" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <div style="display:flex; gap:6px;">
+                                <button onclick="toggleCompareMode(3, 'before')" id="s3BtnBefore" class="tab-btn" style="padding:4px 10px; font-size:10px; font-weight:700; border-color:rgba(255,255,255,0.2); color:#94A3B8;">
+                                    &#128308; BEFORE (SOLDER BRIDGE)
+                                </button>
+                                <button onclick="toggleCompareMode(3, 'after')" id="s3BtnAfter" class="tab-btn active-tab" style="padding:4px 10px; font-size:10px; font-weight:700; border-color:#10B981; color:#30D158;">
+                                    &#128994; AFTER (REWORK VERIFIED)
+                                </button>
+                            </div>
+                            <span id="s3CompareLabel" style="font-family:'JetBrains Mono',monospace; font-size:9px; color:#30D158; font-weight:600;">
+                                REWORK VERIFIED &middot; 0.24mm AIR GAP PASS
+                            </span>
+                        </div>
+
                         <!-- Layer 1 View: Pristine Fillet Image (100% Pixel Aligned with Macro) -->
                         <div id="s3ImgWrapper" class="image-container">
                             <img id="afterImageEl" src="/static/board_inspection_clean.jpg" alt="Rework Verified Clean PCBA">
-                            <div class="bbox-nominal"></div>
+                            <div id="s3BBox" class="bbox-nominal"></div>
                         </div>
 
                         <!-- Layer 2 View: Real-Time Oscilloscope & Clean Spectrum -->
@@ -2065,6 +2146,108 @@ async def serve_dashboard_v8():
             // Reconnect after 2s
             setTimeout(() => { ws = new WebSocket(wsUrl); }, 2000);
         };
+
+        // Toggle Mission Details Drawer
+        function toggleMissionDetails() {
+            const drawer = document.getElementById("missionDetailDrawer");
+            const arrow = document.getElementById("missionToggleArrow");
+            if (!drawer) return;
+            if (drawer.style.display === "none" || drawer.style.display === "") {
+                drawer.style.display = "block";
+                if (arrow) arrow.innerHTML = "&#9652;";
+            } else {
+                drawer.style.display = "none";
+                if (arrow) arrow.innerHTML = "&#9662;";
+            }
+        }
+
+        // Interactive Before / After Image Comparison
+        function toggleCompareMode(stateNum, mode) {
+            const timestamp = new Date().getTime();
+            if (stateNum === 2) {
+                const img = document.getElementById("s2MacroImg");
+                const btnB = document.getElementById("s2BtnBefore");
+                const btnA = document.getElementById("s2BtnAfter");
+                const lbl = document.getElementById("s2CompareLabel");
+                const bbox = document.getElementById("s2BBox");
+                if (mode === "before") {
+                    if (img) img.src = "/static/board_inspection_macro.jpg?t=" + timestamp;
+                    if (btnB) {
+                        btnB.classList.add("active-tab");
+                        btnB.style.color = "#FF453A";
+                        btnB.style.borderColor = "#EF4444";
+                    }
+                    if (btnA) {
+                        btnA.classList.remove("active-tab");
+                        btnA.style.color = "#94A3B8";
+                        btnA.style.borderColor = "rgba(255,255,255,0.2)";
+                    }
+                    if (lbl) {
+                        lbl.innerText = "DEFECT: 0.24mm SOLDER BRIDGE SHORT";
+                        lbl.style.color = "#EF4444";
+                    }
+                    if (bbox) bbox.className = "bbox-fault";
+                } else {
+                    if (img) img.src = "/static/board_inspection_clean.jpg?t=" + timestamp;
+                    if (btnA) {
+                        btnA.classList.add("active-tab");
+                        btnA.style.color = "#30D158";
+                        btnA.style.borderColor = "#10B981";
+                    }
+                    if (btnB) {
+                        btnB.classList.remove("active-tab");
+                        btnB.style.color = "#94A3B8";
+                        btnB.style.borderColor = "rgba(255,255,255,0.2)";
+                    }
+                    if (lbl) {
+                        lbl.innerText = "PREVIEWING REWORKED STATE (CLEAN AIR GAP)";
+                        lbl.style.color = "#30D158";
+                    }
+                    if (bbox) bbox.className = "bbox-nominal";
+                }
+            } else if (stateNum === 3) {
+                const img = document.getElementById("afterImageEl");
+                const btnB = document.getElementById("s3BtnBefore");
+                const btnA = document.getElementById("s3BtnAfter");
+                const lbl = document.getElementById("s3CompareLabel");
+                const bbox = document.getElementById("s3BBox");
+                if (mode === "before") {
+                    if (img) img.src = "/static/board_inspection_macro.jpg?t=" + timestamp;
+                    if (btnB) {
+                        btnB.classList.add("active-tab");
+                        btnB.style.color = "#FF453A";
+                        btnB.style.borderColor = "#EF4444";
+                    }
+                    if (btnA) {
+                        btnA.classList.remove("active-tab");
+                        btnA.style.color = "#94A3B8";
+                        btnA.style.borderColor = "rgba(255,255,255,0.2)";
+                    }
+                    if (lbl) {
+                        lbl.innerText = "COMPARING WITH ORIGINAL DEFECT (PIN 48-49 BRIDGE)";
+                        lbl.style.color = "#EF4444";
+                    }
+                    if (bbox) bbox.className = "bbox-fault";
+                } else {
+                    if (img) img.src = "/static/board_inspection_clean.jpg?t=" + timestamp;
+                    if (btnA) {
+                        btnA.classList.add("active-tab");
+                        btnA.style.color = "#30D158";
+                        btnA.style.borderColor = "#10B981";
+                    }
+                    if (btnB) {
+                        btnB.classList.remove("active-tab");
+                        btnB.style.color = "#94A3B8";
+                        btnB.style.borderColor = "rgba(255,255,255,0.2)";
+                    }
+                    if (lbl) {
+                        lbl.innerText = "REWORK VERIFIED · 0.24mm AIR GAP PASS";
+                        lbl.style.color = "#30D158";
+                    }
+                    if (bbox) bbox.className = "bbox-nominal";
+                }
+            }
+        }
 
         // Tab Switcher between Layer 1 (Optical), Layer 2 (Signal ML), CAD Digital Twin, and Neural Thinking
         let currentTabState2 = "layer1";
@@ -2540,16 +2723,26 @@ async def serve_dashboard_v8():
 
             topBeacon.className = "state-beacon";
 
+            const nav1 = document.getElementById("navState1");
+            const nav2 = document.getElementById("navState2");
+            const nav3 = document.getElementById("navState3");
+            if (nav1) nav1.className = "state-nav-btn";
+            if (nav2) nav2.className = "state-nav-btn";
+            if (nav3) nav3.className = "state-nav-btn";
+
             if (mode === "inspection") {
                 viewS1.classList.remove("view-hidden");
                 topBeacon.classList.add("beacon-inspect");
                 beaconText.innerText = "STATE 1: INSPECTION ACTIVE";
+                if (nav1) nav1.className = "state-nav-btn active-inspect";
                 startElapsedTimer();
                 speakAvionics("State 1: Active optical scanning and fiducial homography alignment.");
             } else if (mode === "fault") {
                 viewS2.classList.remove("view-hidden");
                 topBeacon.classList.add("beacon-fault");
                 beaconText.innerText = "STATE 2: FAULT DETECTED";
+                if (nav2) nav2.className = "state-nav-btn active-fault";
+                toggleCompareMode(2, 'before');
                 stopElapsedTimer();
                 playAlarmSound();
                 speakAvionics("Warning: Pre-power interlock tripped. Solder bridge detected across Pin 48 and Pin 49 on U14. Primary contactor latched open in 3.18 milliseconds.");
@@ -2557,6 +2750,8 @@ async def serve_dashboard_v8():
                 viewS3.classList.remove("view-hidden");
                 topBeacon.classList.add("beacon-clear");
                 beaconText.innerText = "STATE 3: CLEARED — POWER AUTHORIZED";
+                if (nav3) nav3.className = "state-nav-btn active-nominal";
+                toggleCompareMode(3, 'after');
                 stopElapsedTimer();
                 playSuccessSound();
                 speakAvionics("Rework verified. Clearance compliant. Power authorized. 24-volt bus energized. In-flight predictive signal monitor active.");
