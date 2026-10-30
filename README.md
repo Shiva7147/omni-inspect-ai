@@ -149,6 +149,18 @@ python -m engine.edge.inference_daemon --bench
 ```
 Tests the sub-microsecond `FastTreeEvaluator` on 100kSPS sliding windows with live fault injection, measuring microsecond latency and verifying fail-safe Crydom SSR interlock tripping.
 
+### 7. Serverless Cloud SPICE Simulation & Public API (Modal)
+Deploy and run containerized 100kSPS Monte Carlo fault simulations on Modal:
+```bash
+# Run parallel cloud SPICE simulations across serverless workers
+python -m modal run modal_app.py
+
+# Live public audit endpoint (accessible globally over HTTPS):
+curl -X POST https://shivaclick14--omni-inspect-ai-remote-audit-endpoint.us-east.modal.run \
+  -H "Content-Type: application/json" \
+  -d '{"ref_des": "U14 (STM32H743)", "clearance_mm": 0.24}'
+```
+
 ---
 
 ## 🎮 Interactive Cockpit Hotkeys
