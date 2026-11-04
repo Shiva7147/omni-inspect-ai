@@ -335,7 +335,7 @@
             display: grid;
             grid-template-columns: 1.15fr 0.85fr;
             gap: 8px;
-            height: calc(100% - 150px);
+            height: calc(100% - 215px);
             min-height: 0;
         }
 
@@ -636,12 +636,12 @@
             height: 20px;
         }
 
-        /* Bottom Row Split Grid */
+        /* Bottom Row Split Grid - Prominent RCA View */
         .bottom-split {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 0.75fr 1.25fr;
             gap: 8px;
-            height: 90px;
+            height: 150px;
             flex-shrink: 0;
         }
 
@@ -665,12 +665,13 @@
 
         .log-box-scroll {
             flex: 1;
-            background: rgba(0, 0, 0, 0.35);
-            border: 1px solid var(--panel-border);
-            border-radius: 4px;
-            padding: 4px 8px;
+            background: rgba(4, 7, 14, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            padding: 8px 12px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
+            font-size: 11px;
+            line-height: 1.45;
             color: var(--text-secondary);
             overflow-y: auto;
             min-height: 0;
@@ -2047,7 +2048,12 @@
                                         streamBox.innerHTML = "";
                                     }
                                     fullText += data.token;
-                                    const formatted = fullText.replace(/\n/g, "<br>");
+                                    let formatted = fullText
+                                        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                                        .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#FFF;">$1</strong>')
+                                        .replace(/^([0-9]+\.\s+.*?)$/gm, '<div style="color:var(--color-nominal); font-weight:700; margin-top:6px; margin-bottom:2px;">$1</div>')
+                                        .replace(/INFERRED BY MODEL/g, '<span class="sim-tag" style="color:#C084FC; border-color:rgba(192,132,252,0.4); background:rgba(192,132,252,0.1);">INFERRED BY MODEL</span>')
+                                        .replace(/\n/g, "<br>");
                                     streamBox.innerHTML = formatted;
                                     streamBox.scrollTop = streamBox.scrollHeight;
                                     if (tab3Content) tab3Content.innerHTML = formatted;

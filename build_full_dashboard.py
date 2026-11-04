@@ -1,0 +1,2303 @@
+import sys
+from pathlib import Path
+
+html_content = r'''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniInspect AI - Cyber-Physical Safety Gate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-base: #07090E;
+            --panel-bg: rgba(13, 18, 30, 0.78);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --panel-blur: blur(20px);
+            --color-nominal: #38BDF8;      /* Cyan for nominal state */
+            --color-amber: #F59E0B;        /* Amber when score > 80% of threshold */
+            --color-red: #EF4444;          /* Red after trip */
+            --color-green: #10B981;        /* Running rails / passed checks */
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 400;
+            height: 100vh;
+            max-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* No vertical scroll at 1920x1080 and 1440x900 */
+        }
+
+        .bg-underlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(7, 9, 14, 0.92), rgba(7, 9, 14, 0.96)), 
+                        url('/static/cinematic_pcb_bg.jpg') center/cover no-repeat fixed;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            backdrop-filter: var(--panel-blur);
+            -webkit-backdrop-filter: var(--panel-blur);
+            border-radius: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-feature-settings: "tnum" on, "zero" on;
+        }
+
+        .sim-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8px;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 1px 4px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .synthetic-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            font-weight: 500;
+            color: #94A3B8;
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Slim Header */
+        header {
+            height: 48px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--panel-border);
+            background: rgba(10, 14, 24, 0.85);
+            backdrop-filter: blur(16px);
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .brand-zone {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-title {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: #FFF;
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* Stepper Navigation */
+        .stepper-nav {
+            display: flex;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 2px;
+            border-radius: 6px;
+            border: 1px solid var(--panel-border);
+        }
+
+        .step-tab {
+            padding: 5px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .step-tab:hover:not(.locked) {
+            color: #FFF;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .step-tab.active {
+            color: #FFF;
+            background: rgba(56, 189, 248, 0.16);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+        }
+
+        .step-tab.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .status-nominal {
+            background: rgba(56, 189, 248, 0.12);
+            color: #38BDF8;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+        }
+
+        .status-precursor {
+            background: rgba(245, 158, 11, 0.14);
+            color: #F59E0B;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            animation: pulse-amber 1.5s infinite;
+        }
+
+        .status-tripped {
+            background: rgba(239, 68, 68, 0.16);
+            color: #EF4444;
+            border: 1px solid rgba(239, 68, 68, 0.45);
+            animation: pulse-red 1s infinite;
+        }
+
+        .status-acknowledged {
+            background: rgba(168, 85, 247, 0.14);
+            color: #C084FC;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+        }
+
+        @keyframes pulse-amber {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.65; }
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--panel-border);
+            color: var(--text-secondary);
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-ghost:hover {
+            color: #FFF;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Controls Strip */
+        .controls-strip {
+            height: 38px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 6px 12px 0 12px;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-control {
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            color: #FFF;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-control:hover {
+            background: rgba(56, 189, 248, 0.25);
+        }
+
+        .btn-control.active {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.45);
+            color: #F87171;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--panel-border);
+            color: var(--text-primary);
+            font-size: 11px;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #FFF;
+        }
+
+        /* Soak Result Banner */
+        .soak-banner {
+            display: none;
+            padding: 4px 14px;
+            margin: 4px 12px 0 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: #A7F3D0;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        /* Main Workspace Container */
+        main {
+            flex: 1;
+            padding: 8px 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-view {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .page-view.active {
+            display: flex;
+        }
+
+        /* TAB 1: PRODUCTION RUN LAYOUT */
+        .tab1-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 8px;
+            height: calc(100% - 150px);
+            min-height: 0;
+        }
+
+        /* Hero Card */
+        .hero-card {
+            padding: 10px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-height: 0;
+        }
+
+        .hero-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .score-hero-val {
+            font-size: 44px;
+            font-weight: 700;
+            line-height: 1.0;
+            color: var(--color-nominal);
+            transition: color 0.2s ease;
+        }
+
+        .score-hero-val.amber {
+            color: var(--color-amber);
+        }
+
+        .score-hero-val.red {
+            color: var(--color-red);
+        }
+
+        .score-sublabel {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+
+        /* Phase Stepper */
+        .phase-stepper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--panel-border);
+        }
+
+        .phase-step {
+            color: var(--text-muted);
+        }
+
+        .phase-step.active {
+            color: #38BDF8;
+            font-weight: 700;
+        }
+
+        .phase-step.breached {
+            color: #EF4444;
+            font-weight: 700;
+        }
+
+        .phase-arrow {
+            color: var(--text-muted);
+            font-size: 8px;
+        }
+
+        /* 60s Score Chart Box */
+        .chart-box {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            border: 1px solid var(--panel-border);
+            overflow: hidden;
+        }
+
+        canvas#scoreCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Score Chart Meta Info Strip */
+        .chart-meta-strip {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-secondary);
+            padding-top: 4px;
+            border-top: 1px solid var(--panel-border);
+            flex-shrink: 0;
+        }
+
+        .rule-dots {
+            display: inline-flex;
+            gap: 3px;
+            align-items: center;
+        }
+
+        .rule-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: inline-block;
+        }
+
+        .rule-dot.active {
+            background: #EF4444;
+            box-shadow: 0 0 6px #EF4444;
+        }
+
+        /* Deviation Panel (Z-scores) */
+        .deviation-panel {
+            padding: 10px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-height: 0;
+        }
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #FFF;
+        }
+
+        .panel-sub {
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        /* S1 / S2 / S3 Signature Chips */
+        .sig-chips-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+            margin: 2px 0;
+        }
+
+        .sig-chip-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--panel-border);
+            border-radius: 4px;
+            padding: 4px 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .sig-chip-card.matched {
+            border-color: rgba(239, 68, 68, 0.4);
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .sig-chip-name {
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sig-chip-status {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .sig-chip-card.matched .sig-chip-status {
+            color: #F87171;
+        }
+
+        /* Diverging Z-Score Bars */
+        .bars-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+            justify-content: space-around;
+        }
+
+        .diverging-row {
+            display: grid;
+            grid-template-columns: 120px 1fr 65px;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+        }
+
+        .feature-label {
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 10px;
+        }
+
+        .bar-center-track {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .center-axis {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: rgba(255, 255, 255, 0.25);
+            z-index: 2;
+        }
+
+        .diverging-fill {
+            position: absolute;
+            top: 1px;
+            bottom: 1px;
+            border-radius: 1px;
+            transition: all 0.15s ease;
+        }
+
+        .z-score-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            text-align: right;
+            color: var(--text-primary);
+        }
+
+        .z-score-val.high {
+            color: #EF4444;
+            font-weight: 700;
+        }
+
+        /* Row of 5 Sensor Cards */
+        .sensor-strip {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            height: 58px;
+            flex-shrink: 0;
+        }
+
+        .sensor-card-mini {
+            padding: 4px 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .sensor-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .sensor-card-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 6px;
+        }
+
+        .sensor-card-val {
+            font-size: 15px;
+            font-weight: 700;
+            color: #FFF;
+            line-height: 1.1;
+        }
+
+        .sensor-sparkline {
+            width: 60px;
+            height: 20px;
+        }
+
+        /* Bottom Row Split Grid */
+        .bottom-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            height: 90px;
+            flex-shrink: 0;
+        }
+
+        .bottom-panel {
+            padding: 6px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-height: 0;
+        }
+
+        .bottom-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: #FFF;
+            flex-shrink: 0;
+        }
+
+        .log-box-scroll {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--panel-border);
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-secondary);
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .log-line-item {
+            margin-bottom: 2px;
+            line-height: 1.3;
+        }
+
+        .human-footer {
+            display: none;
+            padding: 4px 8px;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            border-radius: 4px;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            flex-shrink: 0;
+        }
+
+        .human-footer.visible {
+            display: flex;
+        }
+
+        .btn-ack {
+            background: #EF4444;
+            color: #FFF;
+            font-weight: 700;
+            font-size: 10px;
+            padding: 2px 8px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .rca-meta-chips {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            color: var(--text-secondary);
+        }
+
+        .provider-badge {
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: 700;
+            font-size: 9px;
+        }
+
+        .badge-baseten {
+            background: rgba(56, 189, 248, 0.18);
+            color: #38BDF8;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+        }
+
+        .badge-meta {
+            background: rgba(168, 85, 247, 0.18);
+            color: #C084FC;
+            border: 1px solid rgba(168, 85, 247, 0.45);
+        }
+
+        .badge-cached {
+            background: rgba(245, 158, 11, 0.15);
+            color: #F59E0B;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        /* TAB 2: CONTAINMENT LAYOUT */
+        .tab2-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .rail-diagram-panel {
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .rail-item {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rail-item.faulted {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .rail-item.running {
+            border-color: rgba(16, 185, 129, 0.3);
+            background: rgba(16, 185, 129, 0.04);
+        }
+
+        .rail-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #FFF;
+        }
+
+        .rail-status-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .rail-open {
+            background: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+
+        .rail-running {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .timeline-col {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+        }
+
+        .timeline-step {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--panel-border);
+            border-radius: 4px;
+            padding: 8px 10px;
+            font-size: 11px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .timeline-ts {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            color: var(--color-nominal);
+            font-weight: 600;
+        }
+
+        .timer-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: #F59E0B;
+        }
+
+        /* TAB 3: MUSE DIAGNOSIS LAYOUT */
+        .tab3-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 12px;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .api-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            margin-top: 6px;
+        }
+
+        .api-table th {
+            text-align: left;
+            color: var(--text-muted);
+            padding: 6px 8px;
+            border-bottom: 1px solid var(--panel-border);
+            font-size: 10px;
+        }
+
+        .api-table td {
+            padding: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+        }
+
+        .confidence-row {
+            display: grid;
+            grid-template-columns: 140px 1fr 45px;
+            gap: 8px;
+            align-items: center;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        /* TAB 4: REPAIR & AUDIT LAYOUT */
+        .tab4-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .repair-step-card {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .repair-step-card.done {
+            border-color: rgba(16, 185, 129, 0.4);
+            background: rgba(16, 185, 129, 0.06);
+        }
+
+        .step-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.1);
+            color: #FFF;
+        }
+
+        .repair-step-card.done .step-circle {
+            background: #10B981;
+            color: #000;
+        }
+
+        .audit-receipt-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-radius: 6px;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        /* Responsive: strictly fit without vertical scroll */
+        @media (max-height: 920px) {
+            header { height: 42px; }
+            .controls-strip { height: 34px; margin-top: 4px; }
+            .hero-card { padding: 6px 10px; }
+            .score-hero-val { font-size: 38px; }
+            .sensor-strip { height: 50px; }
+            .bottom-split { height: 80px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-underlay"></div>
+
+    <!-- Slim Header Bar -->
+    <header>
+        <div class="brand-zone">
+            <span class="brand-title">OMNIINSPECT AI // PRE-POWER CYBER-PHYSICAL SAFETY GATE</span>
+            <span class="brand-sub">Isolation Forest (35 trees), compiled edge evaluator</span>
+            <span class="synthetic-tag">Simulated sensors, synthetic data</span>
+        </div>
+
+        <!-- 4 Global Story Tabs -->
+        <nav class="stepper-nav">
+            <button id="tabBtn1" class="step-tab active" onclick="switchTab(1)">
+                <span>01</span> PRODUCTION RUN
+            </button>
+            <button id="tabBtn2" class="step-tab locked" onclick="switchTab(2)">
+                <span>02</span> CONTAINMENT
+            </button>
+            <button id="tabBtn3" class="step-tab locked" onclick="switchTab(3)">
+                <span>03</span> MUSE DIAGNOSIS
+            </button>
+            <button id="tabBtn4" class="step-tab locked" onclick="switchTab(4)">
+                <span>04</span> REPAIR &amp; AUDIT
+            </button>
+        </nav>
+
+        <!-- Status Pill & Presenter Mode -->
+        <div class="header-actions">
+            <div id="globalStatusPill" class="status-pill status-nominal">
+                <span id="statusPillText">NOMINAL</span>
+            </div>
+            <button class="btn-ghost" onclick="togglePresenterMode()" id="presenterBtn" title="Press 'P' to toggle presenter mode">
+                PRESENTER: LOCKED
+            </button>
+        </div>
+    </header>
+
+    <!-- Simulator Controls Strip -->
+    <div class="glass-panel controls-strip">
+        <div class="control-group">
+            <button id="precursorBtn" class="btn-control" onclick="togglePrecursor()">
+                <span>START PRECURSOR SIMULATION (25s RAMP)</span>
+            </button>
+            <button id="speedBtn" class="btn-secondary" onclick="toggleSpeed()">
+                SPEED: <span id="speedVal" style="color:var(--color-nominal); font-weight:700;">1x</span>
+            </button>
+            <button class="btn-secondary" onclick="resetNominal()">
+                RESET NOMINAL
+            </button>
+        </div>
+
+        <div class="control-group">
+            <button class="btn-secondary" onclick="runSoakTest()">
+                RUN NOMINAL SOAK (10k WINDOWS)
+            </button>
+            <span style="font-size:10px; color:var(--text-muted); font-family:'JetBrains Mono',monospace;">
+                synthetic data, same generator as the ramp
+            </span>
+        </div>
+    </div>
+
+    <!-- Soak Result Banner -->
+    <div id="soakBanner" class="soak-banner">
+        <span id="soakBannerText">SOAK TEST: 10,000 windows scored | 0 Trips | Peak: 0.584 | p99: 0.519 | 95% upper bound on false-trip rate per window ~ 3/N</span>
+        <span style="font-size:9px; color:var(--text-muted);">synthetic data, same generator as the ramp</span>
+    </div>
+
+    <!-- Main View Workspace -->
+    <main>
+
+        <!-- ================================================================= -->
+        <!-- TAB 1: PRODUCTION RUN (LIVE STREAMING)                             -->
+        <!-- ================================================================= -->
+        <section id="tab1Content" class="page-view active">
+
+            <!-- Top Grid: Hero Card (Left) & Deviations Panel (Right) -->
+            <div class="tab1-grid">
+
+                <!-- Left: Hero Card (Score Meter & 60s Chart) -->
+                <div class="glass-panel hero-card">
+                    <div class="hero-top">
+                        <div>
+                            <div class="score-hero-val mono" id="heroScoreNum">0.431</div>
+                            <div class="score-sublabel">
+                                Smoothed for display (EMA &alpha;=0.3) &middot; Raw evaluated per synthetic window
+                            </div>
+                        </div>
+
+                        <!-- Phase Stepper -->
+                        <div class="phase-stepper">
+                            <span id="stepNominal" class="phase-step active">NOMINAL</span>
+                            <span class="phase-arrow">&gt;</span>
+                            <span id="stepDrift" class="phase-step">DRIFT</span>
+                            <span class="phase-arrow">&gt;</span>
+                            <span id="stepPrecursor" class="phase-step">PRECURSOR</span>
+                            <span class="phase-arrow">&gt;</span>
+                            <span id="stepTrip" class="phase-step">TRIP</span>
+                        </div>
+                    </div>
+
+                    <!-- 60s Score Chart Box -->
+                    <div class="chart-box">
+                        <canvas id="scoreCanvas"></canvas>
+                    </div>
+
+                    <!-- Chart Meta Info Strip -->
+                    <div class="chart-meta-strip">
+                        <div>
+                            TRIP RULE:
+                            <span id="ruleCounter" style="color:#FFF; font-weight:700;">[0/3]</span>
+                            <div class="rule-dots" id="ruleDots">
+                                <span class="rule-dot" id="dot1"></span>
+                                <span class="rule-dot" id="dot2"></span>
+                                <span class="rule-dot" id="dot3"></span>
+                            </div>
+                        </div>
+                        <div>
+                            <span id="leadTimeDisp">LEAD TIME: -</span>
+                            <span class="sim-tag">SIMULATED</span>
+                        </div>
+                        <div>
+                            PROJECTED BREACH: <span id="projectedTimeNum" style="color:var(--color-nominal); font-weight:700;">-</span>
+                        </div>
+                        <div>
+                            LATENCY: <span id="measuredLatencyNum" style="color:#FFF; font-weight:700;">1.84 ms</span>
+                            <span class="sim-tag">MEASURED</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Deviation from Nominal Baseline (Z-scores) -->
+                <div class="glass-panel deviation-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <div class="panel-title">Deviation from nominal baseline (z-score)</div>
+                            <div class="panel-sub">Top 5 contributing features across 50ms synthetic window</div>
+                        </div>
+                        <span class="mono" style="font-size:9px; color:var(--color-nominal);">UPDATING LIVE</span>
+                    </div>
+
+                    <!-- Signature Chips S1, S2, S3 inside panel -->
+                    <div class="sig-chips-grid">
+                        <div id="sigChipS1" class="sig-chip-card">
+                            <span class="sig-chip-name">S1: HF Micro-Arcing</span>
+                            <span id="sigTextS1" class="sig-chip-status">WAITING</span>
+                        </div>
+                        <div id="sigChipS2" class="sig-chip-card">
+                            <span class="sig-chip-name">S2: Harmonic THD</span>
+                            <span id="sigTextS2" class="sig-chip-status">WAITING</span>
+                        </div>
+                        <div id="sigChipS3" class="sig-chip-card">
+                            <span class="sig-chip-name">S3: Thermal Drift</span>
+                            <span id="sigTextS3" class="sig-chip-status">WAITING</span>
+                        </div>
+                    </div>
+
+                    <!-- Diverging Horizontal Z-Score Bars (-3 sigma to +3 sigma) -->
+                    <div class="bars-container" id="barsContainer">
+                        <!-- Rendered dynamically by JS -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Middle Row: 5 Continuous Sensor Channels with Sparklines -->
+            <div class="sensor-strip">
+                <div class="glass-panel sensor-card-mini">
+                    <div class="sensor-card-header">
+                        <span>BUS VOLTAGE</span>
+                        <span class="sim-tag">SIMULATED</span>
+                    </div>
+                    <div class="sensor-card-body">
+                        <div id="trace_vbus" class="sensor-card-val mono">24.18 V</div>
+                        <canvas id="spark_vbus" class="sensor-sparkline"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-panel sensor-card-mini">
+                    <div class="sensor-card-header">
+                        <span>LOAD CURRENT</span>
+                        <span class="sim-tag">SIMULATED</span>
+                    </div>
+                    <div class="sensor-card-body">
+                        <div id="trace_cur" class="sensor-card-val mono">4.20 A</div>
+                        <canvas id="spark_cur" class="sensor-sparkline"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-panel sensor-card-mini">
+                    <div class="sensor-card-header">
+                        <span>DI/DT RATE</span>
+                        <span class="sim-tag">SIMULATED</span>
+                    </div>
+                    <div class="sensor-card-body">
+                        <div id="trace_didt" class="sensor-card-val mono">+0.04 A/s</div>
+                        <canvas id="spark_didt" class="sensor-sparkline"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-panel sensor-card-mini">
+                    <div class="sensor-card-header">
+                        <span>JUNCTION TEMP</span>
+                        <span class="sim-tag">SIMULATED</span>
+                    </div>
+                    <div class="sensor-card-body">
+                        <div id="trace_temp" class="sensor-card-val mono">34.2 &deg;C</div>
+                        <canvas id="spark_temp" class="sensor-sparkline"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-panel sensor-card-mini">
+                    <div class="sensor-card-header">
+                        <span>HF ACOUSTIC</span>
+                        <span class="sim-tag">SIMULATED</span>
+                    </div>
+                    <div class="sensor-card-body">
+                        <div id="trace_acoustic" class="sensor-card-val mono">22.4 dB</div>
+                        <canvas id="spark_acoustic" class="sensor-sparkline"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Row: Autonomous Response Log (Left) & Meta Muse Stream (Right) -->
+            <div class="bottom-split">
+
+                <!-- Left: Autonomous Response Log -->
+                <div class="glass-panel bottom-panel">
+                    <div class="bottom-panel-header">
+                        <span>AUTONOMOUS SAFETY RESPONSE</span>
+                        <span class="mono" style="font-size:9px; color:var(--text-muted);">AUTO-ISOLATION LOG</span>
+                    </div>
+
+                    <div id="autoLogBox" class="log-box-scroll">
+                        <div style="color:var(--text-muted); font-style:italic;">Nominal steady-state. Awaiting precursor threshold breach...</div>
+                    </div>
+
+                    <!-- Needs a Human Footer (Only active after trip) -->
+                    <div id="humanFooter" class="human-footer">
+                        <span><strong>NEEDS A HUMAN:</strong> Interlock tripped. Operator acknowledgement required.</span>
+                        <button class="btn-ack" onclick="acknowledgeSafetyAlert()">ACKNOWLEDGE</button>
+                    </div>
+                </div>
+
+                <!-- Right: Meta Muse RCA Stream -->
+                <div class="glass-panel bottom-panel">
+                    <div class="bottom-panel-header">
+                        <span>ROOT CAUSE ANALYSIS (META MUSE)</span>
+                        <div class="rca-meta-chips">
+                            <span id="providerBadge" class="provider-badge badge-baseten">LIVE-BASETEN</span>
+                            <span>First token: <strong id="firstTokenDisp" style="color:#FFF;">-</strong></span>
+                            <span class="synthetic-tag" style="font-size:8px;">INFERRED BY MODEL</span>
+                        </div>
+                    </div>
+
+                    <div id="rcaStreamBox" class="log-box-scroll">
+                        <span style="color:var(--text-muted); font-style:italic;">Inference begins reasoning once score crosses 80% threshold...</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================================================================= -->
+        <!-- TAB 2: CONTAINMENT (ISOLATION SCHEMATIC & ESCALATION)             -->
+        <!-- ================================================================= -->
+        <section id="tab2Content" class="page-view">
+            <div class="tab2-grid">
+
+                <!-- Left: Power Rail Isolation Diagram -->
+                <div class="glass-panel rail-diagram-panel">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-size:14px; font-weight:700; color:#FFF;">Power Rail Isolation Schematic</div>
+                            <div style="font-size:11px; color:var(--text-secondary);">Single purpose: verify short is isolated while unaffected systems remain running</div>
+                        </div>
+                        <span class="synthetic-tag">Contactors SIMULATED</span>
+                    </div>
+
+                    <!-- Main Bus -->
+                    <div class="rail-item running">
+                        <div>
+                            <div class="rail-title">24V Main Power Bus</div>
+                            <div style="font-size:11px; color:var(--text-secondary);">Primary station distribution feed</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="mono" style="font-size:13px; font-weight:700; color:#10B981;" id="rail_v_24v">24.16 V</div>
+                            <span class="rail-status-pill rail-running">ENERGIZED</span>
+                        </div>
+                    </div>
+
+                    <!-- Faulted Rail (+3.3V Logic) -->
+                    <div class="rail-item faulted">
+                        <div>
+                            <div class="rail-title">+3.3V Logic Rail (MCU U14 STM32H743)</div>
+                            <div style="font-size:11px; color:#EF4444;">Precursor short detected &middot; Solid-state interlock latched OPEN</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="mono" style="font-size:13px; font-weight:700; color:#EF4444;" id="rail_v_3v3">0.00 V</div>
+                            <span class="rail-status-pill rail-open">OPEN (ISOLATED)</span>
+                        </div>
+                    </div>
+
+                    <!-- Running Rails -->
+                    <div class="rail-item running">
+                        <div>
+                            <div class="rail-title">5V Sensor Rail</div>
+                            <div style="font-size:11px; color:var(--text-secondary);">Telemetry encoders &amp; environmental monitors</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="mono" style="font-size:13px; font-weight:700; color:#10B981;" id="rail_v_5v">5.02 V</div>
+                            <span class="rail-status-pill rail-running">RUNNING</span>
+                        </div>
+                    </div>
+
+                    <div class="rail-item running">
+                        <div>
+                            <div class="rail-title">12V Motor Driver Rail</div>
+                            <div style="font-size:11px; color:var(--text-secondary);">Conveyor actuators &amp; optical gantry drive</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="mono" style="font-size:13px; font-weight:700; color:#10B981;" id="rail_v_12v">12.04 V</div>
+                            <span class="rail-status-pill rail-running">RUNNING</span>
+                        </div>
+                    </div>
+
+                    <div class="rail-item running">
+                        <div>
+                            <div class="rail-title">Comms &amp; Safety Gateway</div>
+                            <div style="font-size:11px; color:var(--text-secondary);">EtherCAT &amp; station telemetry uplink</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="mono" style="font-size:13px; font-weight:700; color:#10B981;" id="rail_v_comms">3.31 V</div>
+                            <span class="rail-status-pill rail-running">RUNNING</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Two-Column Timeline & Escalation Timer -->
+                <div class="glass-panel" style="padding:14px; display:flex; flex-direction:column; gap:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-size:14px; font-weight:700; color:#FFF;">Containment Timeline &amp; Human Gate</div>
+                            <div style="font-size:11px; color:var(--text-secondary);">Autonomous action (0-15 ms SIMULATED) vs. Human signoff</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:9px; color:var(--text-muted);">ESCALATION TIMER</div>
+                            <div class="timer-badge mono" id="escalationTimer">00:60</div>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; flex:1; min-height:0;">
+                        <!-- Col 1: AUTOMATIC (Timestamps only, no hashes) -->
+                        <div class="timeline-col">
+                            <div style="font-size:11px; font-weight:700; color:var(--color-nominal);">AUTOMATIC (0-15 ms SIMULATED)</div>
+                            <div class="timeline-step">
+                                <div><strong>Trip Detected</strong> (3/3 windows &gt; 0.680)</div>
+                                <div class="timeline-ts">T+00:00.000 ms</div>
+                            </div>
+                            <div class="timeline-step">
+                                <div><strong>Relay OPEN Commanded</strong> (+3V3 Logic Rail)</div>
+                                <div class="timeline-ts">T+00:01.840 ms</div>
+                            </div>
+                            <div class="timeline-step">
+                                <div><strong>Logic Rail Isolated</strong> (0.00V verified)</div>
+                                <div class="timeline-ts">T+00:03.180 ms</div>
+                            </div>
+                            <div class="timeline-step">
+                                <div><strong>Secondary Rails Verified</strong> (24V, 5V, 12V active)</div>
+                                <div class="timeline-ts">T+00:04.500 ms</div>
+                            </div>
+                            <div class="timeline-step">
+                                <div><strong>Technician Alert Dispatched</strong> (OP-4821)</div>
+                                <div class="timeline-ts">T+00:06.200 ms</div>
+                            </div>
+                            <div class="timeline-step">
+                                <div><strong>Meta Muse RCA Dispatched</strong> (Baseten)</div>
+                                <div class="timeline-ts">T+00:10.800 ms</div>
+                            </div>
+                        </div>
+
+                        <!-- Col 2: HUMAN REQUIRED -->
+                        <div class="timeline-col">
+                            <div style="font-size:11px; font-weight:700; color:#F59E0B;">HUMAN REQUIRED</div>
+                            <div class="timeline-step" style="border-color:rgba(245,158,11,0.3);">
+                                <div><strong>Step 1: Technician Acknowledgment</strong></div>
+                                <div style="font-size:10px; color:var(--text-secondary); margin:2px 0;">Required to halt 60s escalation countdown.</div>
+                                <button id="containmentAckBtn" class="btn-control" style="font-size:10px; padding:3px 6px;" onclick="acknowledgeSafetyAlert()">
+                                    ACKNOWLEDGE (OP-4821)
+                                </button>
+                                <div id="ackStatusLine" class="timeline-ts" style="color:#A7F3D0; margin-top:2px;"></div>
+                            </div>
+
+                            <div class="timeline-step">
+                                <div><strong>Step 2: Physical Lockout / Tagout</strong></div>
+                                <div style="font-size:10px; color:var(--text-secondary);">Verify switch SW14 padlocked off.</div>
+                            </div>
+
+                            <div class="timeline-step">
+                                <div><strong>Step 3: Visual Microscope Rework</strong></div>
+                                <div style="font-size:10px; color:var(--text-secondary);">Wick excess solder bridge at U14 pin 48/49.</div>
+                            </div>
+
+                            <div class="timeline-step">
+                                <div><strong>Step 4: Station Gate Clearance</strong></div>
+                                <div style="font-size:10px; color:var(--text-secondary);">Clear to re-energize ticket.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- ================================================================= -->
+        <!-- TAB 3: MUSE DIAGNOSIS (LIVE API-CALLS TABLE & NETLIST TWIN)        -->
+        <!-- ================================================================= -->
+        <section id="tab3Content" class="page-view">
+            <div class="tab3-grid">
+
+                <!-- Left: Live API-Calls Table & Epistemic Confidence -->
+                <div class="glass-panel" style="padding:14px; display:flex; flex-direction:column; gap:12px;">
+                    <div>
+                        <div style="font-size:14px; font-weight:700; color:#FFF;">Multimodal Inference Telemetry</div>
+                        <div style="font-size:11px; color:var(--text-secondary);">Live HTTP call telemetry for Meta Muse foundation model</div>
+                    </div>
+
+                    <!-- API Calls Table -->
+                    <table class="api-table">
+                        <thead>
+                            <tr>
+                                <th>PROVIDER</th>
+                                <th>ENDPOINT</th>
+                                <th>MODEL</th>
+                                <th>LATENCY</th>
+                                <th>TOKENS</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="provider-badge badge-baseten" id="tab3ProviderBadge">LIVE-BASETEN</span></td>
+                                <td style="font-size:10px; color:var(--text-secondary);" id="tab3Endpoint">https://inference.baseten.co/v1/chat/completions</td>
+                                <td style="font-size:10px; color:#FFF;" id="tab3Model">meta-models/muse-spark-open-1026</td>
+                                <td style="color:#A7F3D0; font-weight:700;" id="tab3Latency">4,722.7 ms</td>
+                                <td id="tab3Tokens">348</td>
+                                <td><span style="color:#10B981; font-weight:700;">200 OK</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Epistemic Confidence Breakdown -->
+                    <div style="margin-top:8px;">
+                        <div style="font-size:12px; font-weight:600; color:#FFF; margin-bottom:8px;">Root-Cause Confidence Distribution</div>
+                        
+                        <div class="confidence-row">
+                            <span style="color:var(--text-secondary);">Solder Bridging (U14)</span>
+                            <div class="bar-center-track" style="height:8px;">
+                                <div style="position:absolute; left:0; top:0; bottom:0; width:94.2%; background:#EF4444; border-radius:2px;"></div>
+                            </div>
+                            <span class="mono" style="font-size:10px; color:#EF4444; font-weight:700;">94.2%</span>
+                        </div>
+
+                        <div class="confidence-row">
+                            <span style="color:var(--text-secondary);">Ionic Flux Migration</span>
+                            <div class="bar-center-track" style="height:8px;">
+                                <div style="position:absolute; left:0; top:0; bottom:0; width:81.6%; background:#F59E0B; border-radius:2px;"></div>
+                            </div>
+                            <span class="mono" style="font-size:10px; color:#F59E0B; font-weight:700;">81.6%</span>
+                        </div>
+
+                        <div class="confidence-row">
+                            <span style="color:var(--text-secondary);">MLCC C104 Breakdown</span>
+                            <div class="bar-center-track" style="height:8px;">
+                                <div style="position:absolute; left:0; top:0; bottom:0; width:62.4%; background:#38BDF8; border-radius:2px;"></div>
+                            </div>
+                            <span class="mono" style="font-size:10px; color:#38BDF8; font-weight:700;">62.4%</span>
+                        </div>
+                    </div>
+
+                    <!-- Digital Netlist Cross-Reference -->
+                    <div style="background:rgba(0,0,0,0.4); border:1px solid var(--panel-border); border-radius:6px; padding:10px;">
+                        <div style="font-size:11px; font-weight:700; color:var(--color-nominal); margin-bottom:4px;">CAD / NETLIST CROSS-REFERENCE</div>
+                        <div style="font-size:10px; font-family:'JetBrains Mono',monospace; color:var(--text-secondary); line-height:1.4;">
+                            Component: U14 (LQFP-144 STM32H743)<br>
+                            Pin 48: NET_VCC_3V3_MCU [Logic Rail Feed]<br>
+                            Pin 49: NET_GND_ISO [Isolated Analog Return]<br>
+                            Physical Pitch: 0.50 mm &middot; Stencil Defect: +142% volume
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Multimodal Reasoning Content -->
+                <div class="glass-panel" style="padding:14px; display:flex; flex-direction:column; gap:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-size:14px; font-weight:700; color:#FFF;">Multimodal Reasoning Breakdown</div>
+                        <span class="synthetic-tag">INFERRED BY MODEL</span>
+                    </div>
+
+                    <div id="tab3RcaContent" class="log-box-scroll" style="flex:1; font-size:11px; line-height:1.5; padding:10px;">
+                        <!-- Mirrored dynamically from RCA stream -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- ================================================================= -->
+        <!-- TAB 4: REPAIR & AUDIT (STEPPER, RE-VERIFY, BEFORE/AFTER TABLE)     -->
+        <!-- ================================================================= -->
+        <section id="tab4Content" class="page-view">
+            <div class="tab4-grid">
+
+                <!-- Left: Physical Rework Stepper -->
+                <div class="glass-panel" style="padding:14px; display:flex; flex-direction:column; gap:10px;">
+                    <div>
+                        <div style="font-size:14px; font-weight:700; color:#FFF;">Technician Rework Protocol</div>
+                        <div style="font-size:11px; color:var(--text-secondary);">Guided repair procedure prior to re-energizing logic rail</div>
+                    </div>
+
+                    <div class="repair-step-card done">
+                        <div class="step-circle">&#10003;</div>
+                        <div>
+                            <div style="font-size:12px; font-weight:600; color:#FFF;">Step 1: Lockout / Tagout (LOTO)</div>
+                            <div style="font-size:10px; color:var(--text-secondary);">Station supply isolated. Padlock verified by OP-4821.</div>
+                        </div>
+                    </div>
+
+                    <div class="repair-step-card done">
+                        <div class="step-circle">&#10003;</div>
+                        <div>
+                            <div style="font-size:12px; font-weight:600; color:#FFF;">Step 2: Solder Bridge Removal</div>
+                            <div style="font-size:10px; color:var(--text-secondary);">Liquid flux applied. Excess solder wicked using micro-iron (&lt;320&deg;C).</div>
+                        </div>
+                    </div>
+
+                    <div class="repair-step-card" id="step3Card">
+                        <div class="step-circle" id="step3Num">3</div>
+                        <div style="flex:1;">
+                            <div style="font-size:12px; font-weight:600; color:#FFF;">Step 3: Optical Microscope Re-Inspection</div>
+                            <div style="font-size:10px; color:var(--text-secondary);">Clearance &gt; 0.25mm confirmed between Pin 48 and Pin 49.</div>
+                        </div>
+                    </div>
+
+                    <div class="repair-step-card" id="step4Card">
+                        <div class="step-circle" id="step4Num">4</div>
+                        <div style="flex:1;">
+                            <div style="font-size:12px; font-weight:600; color:#FFF;">Step 4: Re-Verification &amp; Gate Signoff</div>
+                            <div style="font-size:10px; color:var(--text-secondary);">Compiled edge model electrical re-evaluation.</div>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <div style="margin-top:auto; display:flex; gap:8px;">
+                        <button id="reverifyBtn" class="btn-control" style="flex:1; padding:8px;" onclick="executeReverification()">
+                            EXECUTE RE-VERIFICATION SCAN
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: Before / After Metrics Table & Tamper-Evident SHA-256 Digest -->
+                <div class="glass-panel" style="padding:14px; display:flex; flex-direction:column; gap:12px;">
+                    <div>
+                        <div style="font-size:14px; font-weight:700; color:#FFF;">Electrical Health Verification</div>
+                        <div style="font-size:11px; color:var(--text-secondary);">Before vs After comparison &amp; tamper-evident audit record</div>
+                    </div>
+
+                    <!-- Comparison Table -->
+                    <table class="api-table">
+                        <thead>
+                            <tr>
+                                <th>METRIC</th>
+                                <th>FAULTED</th>
+                                <th>RE-VERIFIED</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparisonTableBody">
+                            <tr>
+                                <td>Bus Voltage</td>
+                                <td style="color:#EF4444;">0.00 V (Isolated)</td>
+                                <td style="color:#A7F3D0;" id="tableAfterV">-</td>
+                                <td><span id="tableStatusV" class="rail-status-pill rail-open">AWAITING SCAN</span></td>
+                            </tr>
+                            <tr>
+                                <td>Load Current</td>
+                                <td style="color:#EF4444;">0.00 mA</td>
+                                <td style="color:#A7F3D0;" id="tableAfterI">-</td>
+                                <td><span id="tableStatusI" class="rail-status-pill rail-open">AWAITING SCAN</span></td>
+                            </tr>
+                            <tr>
+                                <td>18.4 kHz Micro-Arc</td>
+                                <td style="color:#EF4444;">74.2 dB</td>
+                                <td style="color:#A7F3D0;" id="tableAfterA">-</td>
+                                <td><span id="tableStatusA" class="rail-status-pill rail-open">AWAITING SCAN</span></td>
+                            </tr>
+                            <tr>
+                                <td>Anomaly Score</td>
+                                <td style="color:#EF4444; font-weight:700;">0.727 (Breach)</td>
+                                <td style="color:#A7F3D0; font-weight:700;" id="tableAfterScore">-</td>
+                                <td><span id="tableStatusScore" class="rail-status-pill rail-open">AWAITING SCAN</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Cryptographic Tamper-Evident Audit Digest Box -->
+                    <div class="audit-receipt-box">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="color:#10B981; font-weight:700;">TAMPER-EVIDENT AUDIT RECEIPT</span>
+                            <span style="font-size:9px; color:var(--text-muted);" id="auditTimestamp">TIMESTAMP: PENDING</span>
+                        </div>
+                        <div style="font-size:10px; color:var(--text-secondary); word-break:break-all;">
+                            SHA-256: <span id="auditShaDigest" style="color:#FFF;">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span>
+                        </div>
+                        <div style="font-size:9px; color:var(--text-muted);">
+                            Integrity: Station OP-4821 &middot; Board STM32H743-REV-D &middot; Cryptographically verified
+                        </div>
+                    </div>
+
+                    <!-- Return to Nominal Button -->
+                    <button id="returnNominalBtn" class="btn-control" style="background:rgba(16,185,129,0.2); border-color:rgba(16,185,129,0.4); color:#A7F3D0; padding:8px; display:none;" onclick="returnToNominalEquilibrium()">
+                        AUTHORIZE &amp; RETURN TO NOMINAL EQUILIBRIUM
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Global State
+        let currentTab = 1;
+        let isPresenterMode = false;
+        let isPrecursorRunning = false;
+        let currentSpeed = 1.0;
+        let hasRequestedRCA = false;
+        let rcaStartTime = null;
+        let rcaTimerInterval = null;
+        let modelThreshold = 0.680;
+        let escalationSeconds = 60;
+        let escalationInterval = null;
+
+        // Telemetry Histories
+        const historyLen = 60; // 60 seconds
+        const scoreHistory = [];
+        const rawHistory = [];
+        const sparkHistories = {
+            vbus: [],
+            cur: [],
+            didt: [],
+            temp: [],
+            acoustic: []
+        };
+
+        // Initialize Canvas Sizing
+        const scoreCanvas = document.getElementById("scoreCanvas");
+        const scoreCtx = scoreCanvas.getContext("2d");
+
+        function resizeCanvases() {
+            const rect = scoreCanvas.parentElement.getBoundingClientRect();
+            scoreCanvas.width = rect.width;
+            scoreCanvas.height = rect.height;
+        }
+        window.addEventListener("resize", resizeCanvases);
+        setTimeout(resizeCanvases, 50);
+
+        // Fetch Model Config on Load
+        async function fetchConfig() {
+            try {
+                const res = await fetch("/api/engine/config");
+                const data = await res.json();
+                if (data.threshold) {
+                    modelThreshold = data.threshold;
+                }
+            } catch (e) {
+                console.error("Config fetch error:", e);
+            }
+        }
+        fetchConfig();
+
+        // WebSocket Telemetry Connection
+        let ws = null;
+        function connectWebSocket() {
+            const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws/telemetry`);
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleTelemetryFrame(data.sensors || data);
+                } catch (e) {
+                    console.error("WS Parse error:", e);
+                }
+            };
+
+            ws.onclose = () => {
+                setTimeout(connectWebSocket, 1000);
+            };
+        }
+        connectWebSocket();
+
+        // Fallback Polling
+        async function fetchTelemetryFrame() {
+            if (ws && ws.readyState === WebSocket.OPEN) return;
+            try {
+                const res = await fetch("/api/state");
+                const stateData = await res.json();
+                if (stateData && stateData.sensors) {
+                    handleTelemetryFrame(stateData.sensors);
+                }
+            } catch (e) {
+                // Ignore transient errors
+            }
+        }
+        setInterval(fetchTelemetryFrame, 200);
+
+        // Handle Live Frame
+        function handleTelemetryFrame(s) {
+            if (!s) return;
+
+            const smoothed = s.smoothed_score !== undefined ? s.smoothed_score : (s.anomaly_score || 0.43);
+            const raw = s.raw_score !== undefined ? s.raw_score : smoothed;
+            const threshold = s.threshold || modelThreshold;
+
+            // 1. Update Hero Score and Color
+            const heroNum = document.getElementById("heroScoreNum");
+            heroNum.innerText = smoothed.toFixed(3);
+            heroNum.className = "score-hero-val mono";
+            if (s.tripped) {
+                heroNum.classList.add("red");
+            } else if (smoothed > (threshold * 0.8)) {
+                heroNum.classList.add("amber");
+            }
+
+            // 2. Phase Stepper
+            updatePhaseStepper(smoothed, threshold, s.tripped);
+
+            // 3. Append to History
+            scoreHistory.push(smoothed);
+            rawHistory.push(raw);
+            if (scoreHistory.length > historyLen * 5) {
+                scoreHistory.shift();
+                rawHistory.shift();
+            }
+
+            // 4. Update Meta Readouts
+            const ruleCounter = document.getElementById("ruleCounter");
+            if (s.tripped) {
+                ruleCounter.innerText = "3/3 · latched";
+                updateRuleDots(3);
+            } else {
+                ruleCounter.innerText = `[${s.consecutive_above || 0}/${s.consecutive_required || 3}]`;
+                updateRuleDots(s.consecutive_above || 0);
+            }
+
+            // Defined event time and lead time: Event Time - Trip Time
+            if (s.tripped && s.lead_time_s !== undefined) {
+                const eventS = s.event_time_s || 25.0;
+                const tripS = s.trip_time_s || (eventS - s.lead_time_s);
+                document.getElementById("leadTimeDisp").innerHTML = `LEAD TIME: <strong style="color:#FFF;">${s.lead_time_s.toFixed(1)}s</strong> <span style="font-size:9px; color:var(--text-muted);">(Event: ${eventS.toFixed(1)}s - Trip: ${tripS.toFixed(1)}s)</span>`;
+            } else {
+                document.getElementById("leadTimeDisp").innerHTML = `LEAD TIME: -`;
+            }
+
+            if (s.projected_time_to_threshold !== undefined) {
+                document.getElementById("projectedTimeNum").innerText = s.projected_time_to_threshold;
+            }
+            if (s.measured_latency_ms !== undefined) {
+                document.getElementById("measuredLatencyNum").innerText = s.measured_latency_ms.toFixed(2) + " ms";
+            }
+
+            // 5. Render Diverging Z-Score Bars
+            if (s.top_features && Array.isArray(s.top_features)) {
+                renderDivergingBars(s.top_features);
+            }
+
+            // 6. Signatures
+            if (s.signatures) {
+                updateSignatures(s.signatures);
+            }
+
+            // 7. Sensor Cards & Sparklines
+            updateSensorCards(s);
+
+            // 8. Tab 2 Moving Rail Voltages
+            if (s.rails) {
+                if (s.rails.rail_24v) document.getElementById("rail_v_24v").innerText = s.rails.rail_24v.voltage.toFixed(2) + " V";
+                if (s.rails.rail_3v3) document.getElementById("rail_v_3v3").innerText = s.rails.rail_3v3.voltage.toFixed(2) + " V";
+                if (s.rails.rail_5v) document.getElementById("rail_v_5v").innerText = s.rails.rail_5v.voltage.toFixed(2) + " V";
+                if (s.rails.rail_12v) document.getElementById("rail_v_12v").innerText = s.rails.rail_12v.voltage.toFixed(2) + " V";
+                if (s.rails.rail_comms) document.getElementById("rail_v_comms").innerText = s.rails.rail_comms.voltage.toFixed(2) + " V";
+            }
+
+            // 9. Autonomous Response Log
+            if (s.auto_log && Array.isArray(s.auto_log)) {
+                renderAutoLog(s.auto_log);
+            }
+
+            // 10. Needs Human Footer Visibility
+            const humanFooter = document.getElementById("humanFooter");
+            if (s.tripped) {
+                humanFooter.classList.add("visible");
+            } else {
+                humanFooter.classList.remove("visible");
+            }
+
+            // 11. Status Pill & Tab Unlocks
+            updateStatusPill(s.status_pill);
+
+            // 12. Trigger RCA when score first exceeds 80% threshold (amber state), NOT at trip!
+            if (smoothed > (threshold * 0.8) && !hasRequestedRCA) {
+                hasRequestedRCA = true;
+                startRCARequest();
+            }
+
+            // Start Tab 2 Escalation Timer on trip
+            if (s.tripped && !escalationInterval) {
+                startEscalationTimer();
+            }
+
+            // 13. Draw Score Canvas
+            drawScoreChart(threshold, s.tripped);
+        }
+
+        // Draw Score Chart: Margin Label, Shaded Breach, Raw & Smoothed traces
+        function drawScoreChart(threshold, tripped) {
+            const w = scoreCanvas.width;
+            const h = scoreCanvas.height;
+            if (!w || !h) return;
+
+            scoreCtx.clearRect(0, 0, w, h);
+
+            // Margin for right-side threshold label
+            const rightMargin = 75;
+            const plotW = w - rightMargin;
+
+            // Grid lines
+            scoreCtx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+            scoreCtx.lineWidth = 1;
+            for (let y = 0.2; y <= 1.0; y += 0.2) {
+                const py = h - (y * h);
+                scoreCtx.beginPath();
+                scoreCtx.moveTo(0, py);
+                scoreCtx.lineTo(plotW, py);
+                scoreCtx.stroke();
+            }
+
+            // Shaded breach zone (threshold to 1.0)
+            const threshY = h - (threshold * h);
+            scoreCtx.fillStyle = "rgba(239, 68, 68, 0.07)";
+            scoreCtx.fillRect(0, 0, plotW, threshY);
+
+            // Threshold Dashed Line
+            scoreCtx.strokeStyle = "#EF4444";
+            scoreCtx.setLineDash([4, 4]);
+            scoreCtx.lineWidth = 1.2;
+            scoreCtx.beginPath();
+            scoreCtx.moveTo(0, threshY);
+            scoreCtx.lineTo(plotW, threshY);
+            scoreCtx.stroke();
+            scoreCtx.setLineDash([]);
+
+            // Threshold Label in Chart Right Margin (overlaps nothing)
+            scoreCtx.fillStyle = "#EF4444";
+            scoreCtx.font = "10px 'JetBrains Mono', monospace";
+            scoreCtx.textAlign = "left";
+            scoreCtx.fillText(`LIMIT: ${threshold.toFixed(3)}`, plotW + 6, threshY + 3);
+
+            // Draw Raw Score Trace (Faint)
+            if (rawHistory.length > 1) {
+                scoreCtx.strokeStyle = "rgba(56, 189, 248, 0.25)";
+                scoreCtx.lineWidth = 1;
+                scoreCtx.beginPath();
+                const step = plotW / (historyLen * 5);
+                for (let i = 0; i < rawHistory.length; i++) {
+                    const px = i * step;
+                    const py = h - (rawHistory[i] * h);
+                    if (i === 0) scoreCtx.moveTo(px, py);
+                    else scoreCtx.lineTo(px, py);
+                }
+                scoreCtx.stroke();
+            }
+
+            // Draw Smoothed EMA Trace (Bold)
+            if (scoreHistory.length > 1) {
+                const lastScore = scoreHistory[scoreHistory.length - 1];
+                scoreCtx.strokeStyle = tripped ? "#EF4444" : (lastScore > (threshold * 0.8) ? "#F59E0B" : "#38BDF8");
+                scoreCtx.lineWidth = 2.2;
+                scoreCtx.beginPath();
+                const step = plotW / (historyLen * 5);
+                for (let i = 0; i < scoreHistory.length; i++) {
+                    const px = i * step;
+                    const py = h - (scoreHistory[i] * h);
+                    if (i === 0) scoreCtx.moveTo(px, py);
+                    else scoreCtx.lineTo(px, py);
+                }
+                scoreCtx.stroke();
+            }
+        }
+
+        // Phase Stepper Highlight
+        function updatePhaseStepper(score, threshold, tripped) {
+            const sNominal = document.getElementById("stepNominal");
+            const sDrift = document.getElementById("stepDrift");
+            const sPrecursor = document.getElementById("stepPrecursor");
+            const sTrip = document.getElementById("stepTrip");
+
+            [sNominal, sDrift, sPrecursor, sTrip].forEach(el => el.className = "phase-step");
+
+            if (tripped) {
+                sTrip.className = "phase-step breached";
+            } else if (score >= threshold * 0.9) {
+                sPrecursor.className = "phase-step active";
+            } else if (score >= 0.48) {
+                sDrift.className = "phase-step active";
+            } else {
+                sNominal.className = "phase-step active";
+            }
+        }
+
+        // Rule Dots
+        function updateRuleDots(consecutive) {
+            document.getElementById("dot1").className = "rule-dot" + (consecutive >= 1 ? " active" : "");
+            document.getElementById("dot2").className = "rule-dot" + (consecutive >= 2 ? " active" : "");
+            document.getElementById("dot3").className = "rule-dot" + (consecutive >= 3 ? " active" : "");
+        }
+
+        // Diverging Z-Score Bars
+        function renderDivergingBars(features) {
+            const container = document.getElementById("barsContainer");
+            if (!container) return;
+            container.innerHTML = "";
+
+            features.forEach(f => {
+                const z = f.z_score;
+                const isHigh = Math.abs(z) > 3.0;
+                const clampedZ = Math.max(-5, Math.min(5, z));
+                const barWidthPct = Math.min(50, Math.abs(clampedZ) / 5 * 50);
+                const isNegative = z < 0;
+
+                const row = document.createElement("div");
+                row.className = "diverging-row";
+                row.innerHTML = `
+                    <span class="feature-label" title="${f.name}">${f.name}</span>
+                    <div class="bar-center-track">
+                        <div class="center-axis"></div>
+                        <div class="diverging-fill" style="
+                            ${isNegative ? `right: 50%; width: ${barWidthPct}%;` : `left: 50%; width: ${barWidthPct}%;`}
+                            background: ${isHigh ? '#EF4444' : (Math.abs(z) > 1.8 ? '#F59E0B' : '#38BDF8')};
+                        "></div>
+                    </div>
+                    <span class="z-score-val ${isHigh ? 'high' : ''}">${z >= 0 ? '+' : ''}${z.toFixed(2)} &sigma;</span>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // Signature Chips
+        function updateSignatures(sigs) {
+            const setSig = (cardId, textId, matched, timeVal) => {
+                const card = document.getElementById(cardId);
+                const txt = document.getElementById(textId);
+                if (card && txt) {
+                    if (matched) {
+                        card.classList.add("matched");
+                        txt.innerText = "MATCHED (" + (timeVal || "16:45:00") + ")";
+                    } else {
+                        card.classList.remove("matched");
+                        txt.innerText = "WAITING";
+                    }
+                }
+            };
+            setSig("sigChipS1", "sigTextS1", sigs.s1, sigs.s1_time);
+            setSig("sigChipS2", "sigTextS2", sigs.s2, sigs.s2_time);
+            setSig("sigChipS3", "sigTextS3", sigs.s3, sigs.s3_time);
+        }
+
+        // Sensor Cards & Sparklines
+        function updateSensorCards(s) {
+            document.getElementById("trace_vbus").innerText = s.bus_voltage.toFixed(2) + " V";
+            document.getElementById("trace_cur").innerText = s.peak_current.toFixed(2) + " A";
+            document.getElementById("trace_didt").innerText = (s.didt_a_s >= 0 ? "+" : "") + s.didt_a_s.toFixed(2) + " A/s";
+            document.getElementById("trace_temp").innerHTML = s.junction_temp.toFixed(1) + " &deg;C";
+            document.getElementById("trace_acoustic").innerText = s.acoustic_energy_db.toFixed(1) + " dB";
+
+            pushSpark("spark_vbus", sparkHistories.vbus, s.bus_voltage, 0, 30);
+            pushSpark("spark_cur", sparkHistories.cur, s.peak_current, 0, 10);
+            pushSpark("spark_didt", sparkHistories.didt, s.didt_a_s, -1, 1);
+            pushSpark("spark_temp", sparkHistories.temp, s.junction_temp, 30, 50);
+            pushSpark("spark_acoustic", sparkHistories.acoustic, s.acoustic_energy_db, 15, 90);
+        }
+
+        function pushSpark(canvasId, arr, val, minV, maxV) {
+            arr.push(val);
+            if (arr.length > 25) arr.shift();
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            const w = canvas.width = 60;
+            const h = canvas.height = 20;
+
+            ctx.clearRect(0, 0, w, h);
+            ctx.strokeStyle = "rgba(56, 189, 248, 0.7)";
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            const step = w / 25;
+            for (let i = 0; i < arr.length; i++) {
+                const norm = (arr[i] - minV) / (maxV - minV);
+                const py = h - (norm * h);
+                const px = i * step;
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+        }
+
+        // Render Auto Log
+        function renderAutoLog(entries) {
+            const box = document.getElementById("autoLogBox");
+            if (!box) return;
+            box.innerHTML = entries.map(l => `<div class="log-line-item">${l}</div>`).join("");
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // Status Pill
+        function updateStatusPill(status) {
+            const pill = document.getElementById("globalStatusPill");
+            const text = document.getElementById("statusPillText");
+            if (!pill || !text) return;
+
+            pill.className = "status-pill";
+            if (status === "TRIPPED") {
+                pill.classList.add("status-tripped");
+                text.innerText = "TRIPPED";
+                document.getElementById("tabBtn2").classList.remove("locked");
+                document.getElementById("tabBtn3").classList.remove("locked");
+            } else if (status === "PRECURSOR") {
+                pill.classList.add("status-precursor");
+                text.innerText = "PRECURSOR";
+            } else if (status === "ACKNOWLEDGED") {
+                pill.classList.add("status-acknowledged");
+                text.innerText = "ACKNOWLEDGED";
+                document.getElementById("tabBtn4").classList.remove("locked");
+            } else if (status === "RECOVERED") {
+                pill.classList.add("status-nominal");
+                text.innerText = "RECOVERED";
+            } else {
+                pill.classList.add("status-nominal");
+                text.innerText = "NOMINAL";
+            }
+        }
+
+        // Stream Meta Muse RCA (Starts at 80% threshold with live reasoning timer)
+        async function startRCARequest() {
+            const streamBox = document.getElementById("rcaStreamBox");
+            const tab3Content = document.getElementById("tab3RcaContent");
+            const badge = document.getElementById("providerBadge");
+            const firstTokenDisp = document.getElementById("firstTokenDisp");
+
+            rcaStartTime = performance.now();
+            if (rcaTimerInterval) clearInterval(rcaTimerInterval);
+
+            // Live reasoning timer until first token
+            rcaTimerInterval = setInterval(() => {
+                const elapsedS = ((performance.now() - rcaStartTime) / 1000).toFixed(1);
+                streamBox.innerHTML = `<span style="color:var(--color-nominal);">Reasoning... ${elapsedS}s</span>`;
+            }, 100);
+
+            try {
+                const response = await fetch("/api/muse/stream_rca");
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let isFirstToken = true;
+                let fullText = "";
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    const lines = chunk.split("\n");
+
+                    for (const line of lines) {
+                        if (line.startsWith("data: ") && line !== "data: [DONE]") {
+                            try {
+                                const data = JSON.parse(line.substring(6));
+                                if (data.token) {
+                                    if (isFirstToken) {
+                                        isFirstToken = false;
+                                        if (rcaTimerInterval) clearInterval(rcaTimerInterval);
+                                        streamBox.innerHTML = "";
+                                    }
+                                    fullText += data.token;
+                                    const formatted = fullText.replace(/\n/g, "<br>");
+                                    streamBox.innerHTML = formatted;
+                                    streamBox.scrollTop = streamBox.scrollHeight;
+                                    if (tab3Content) tab3Content.innerHTML = formatted;
+                                }
+                                if (data.provider) {
+                                    badge.innerText = data.provider;
+                                    badge.className = "provider-badge " + (data.provider === "LIVE-BASETEN" ? "badge-baseten" : (data.provider === "LIVE-META" ? "badge-meta" : "badge-cached"));
+                                    document.getElementById("tab3ProviderBadge").innerText = data.provider;
+                                    document.getElementById("tab3ProviderBadge").className = badge.className;
+                                }
+                                if (data.model) {
+                                    document.getElementById("tab3Model").innerText = data.model;
+                                }
+                                if (data.first_token_ms !== undefined) {
+                                    const msText = typeof data.first_token_ms === "number" ? data.first_token_ms + " ms" : data.first_token_ms;
+                                    firstTokenDisp.innerText = msText;
+                                    document.getElementById("tab3Latency").innerText = msText;
+                                }
+                                if (data.token_count !== undefined) {
+                                    document.getElementById("tab3Tokens").innerText = data.token_count;
+                                }
+                            } catch (e) {
+                                // Ignore json parse errors for split frames
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                if (rcaTimerInterval) clearInterval(rcaTimerInterval);
+                console.error("Stream error:", err);
+            }
+        }
+
+        // Escalation Timer Logic (Tab 2)
+        function startEscalationTimer() {
+            if (escalationInterval) clearInterval(escalationInterval);
+            escalationSeconds = 60;
+
+            escalationInterval = setInterval(() => {
+                if (escalationSeconds > 0) {
+                    escalationSeconds--;
+                    const mm = String(Math.floor(escalationSeconds / 60)).padStart(2, '0');
+                    const ss = String(escalationSeconds % 60).padStart(2, '0');
+                    const timerEl = document.getElementById("escalationTimer");
+                    if (timerEl) timerEl.innerText = `${mm}:${ss}`;
+                } else {
+                    clearInterval(escalationInterval);
+                    const timerEl = document.getElementById("escalationTimer");
+                    if (timerEl) {
+                        timerEl.innerText = "ESCALATED TO LINE LEAD";
+                        timerEl.style.color = "#EF4444";
+                    }
+                }
+            }, 1000);
+        }
+
+        // Acknowledge Safety Alert
+        async function acknowledgeSafetyAlert() {
+            if (escalationInterval) clearInterval(escalationInterval);
+            const timerEl = document.getElementById("escalationTimer");
+            if (timerEl) {
+                timerEl.innerText = "HALTED (ACKNOWLEDGED)";
+                timerEl.style.color = "#10B981";
+            }
+
+            const res = await fetch("/api/containment/acknowledge?operator_id=OP-4821", { method: "POST" });
+            const data = await res.json();
+            const ackLine = document.getElementById("ackStatusLine");
+            if (ackLine) {
+                ackLine.innerText = `ACKNOWLEDGED by OP-4821 at ${data.timestamp}`;
+            }
+            updateStatusPill("ACKNOWLEDGED");
+        }
+
+        // Tab 4: Execute Reverification Scan
+        async function executeReverification() {
+            const btn = document.getElementById("reverifyBtn");
+            btn.innerText = "SCANNING HARDWARE REGISTERS & SAMPLING 50ms WINDOW...";
+            btn.style.opacity = "0.7";
+
+            try {
+                const res = await fetch("/api/repair/reverify?operator_id=OP-4821", { method: "POST" });
+                const data = await res.json();
+
+                // Update Stepper Steps 3 and 4
+                document.getElementById("step3Card").classList.add("done");
+                document.getElementById("step3Num").innerHTML = "&#10003;";
+                document.getElementById("step4Card").classList.add("done");
+                document.getElementById("step4Num").innerHTML = "&#10003;";
+
+                // Update Table
+                document.getElementById("tableAfterV").innerText = "3.30 V";
+                document.getElementById("tableStatusV").className = "rail-status-pill rail-running";
+                document.getElementById("tableStatusV").innerText = "RESTORED";
+
+                document.getElementById("tableAfterI").innerText = "180.2 mA";
+                document.getElementById("tableStatusI").className = "rail-status-pill rail-running";
+                document.getElementById("tableStatusI").innerText = "NOMINAL";
+
+                document.getElementById("tableAfterA").innerText = "22.1 dB";
+                document.getElementById("tableStatusA").className = "rail-status-pill rail-running";
+                document.getElementById("tableStatusA").innerText = "NOMINAL FLOOR";
+
+                document.getElementById("tableAfterScore").innerText = data.after_score.toFixed(3);
+                document.getElementById("tableStatusScore").className = "rail-status-pill rail-running";
+                document.getElementById("tableStatusScore").innerText = "EQUILIBRIUM";
+
+                // Update SHA-256 Digest
+                document.getElementById("auditShaDigest").innerText = data.sha256_audit_digest;
+                document.getElementById("auditTimestamp").innerText = `TIMESTAMP: ${data.timestamp}`;
+
+                // Show Authorize Return Button
+                btn.style.display = "none";
+                document.getElementById("returnNominalBtn").style.display = "block";
+            } catch (e) {
+                btn.innerText = "RE-VERIFICATION ERROR";
+            }
+        }
+
+        function returnToNominalEquilibrium() {
+            resetNominal();
+            switchTab(1);
+        }
+
+        // Precursor ramp controls
+        async function togglePrecursor() {
+            const btn = document.getElementById("precursorBtn");
+            if (!isPrecursorRunning) {
+                isPrecursorRunning = true;
+                hasRequestedRCA = false;
+                btn.classList.add("active");
+                btn.innerHTML = "<span>STOP PRECURSOR RAMP</span>";
+                await fetch("/api/precursor/start?speed=" + currentSpeed, { method: "POST" });
+            } else {
+                resetNominal();
+            }
+        }
+
+        async function toggleSpeed() {
+            currentSpeed = currentSpeed === 1.0 ? 2.0 : 1.0;
+            document.getElementById("speedVal").innerText = currentSpeed + "x";
+            await fetch("/api/precursor/speed?speed=" + currentSpeed, { method: "POST" });
+        }
+
+        async function resetNominal() {
+            isPrecursorRunning = false;
+            hasRequestedRCA = false;
+            if (escalationInterval) clearInterval(escalationInterval);
+            if (rcaTimerInterval) clearInterval(rcaTimerInterval);
+
+            const btn = document.getElementById("precursorBtn");
+            if (btn) {
+                btn.classList.remove("active");
+                btn.innerHTML = "<span>START PRECURSOR SIMULATION (25s RAMP)</span>";
+            }
+            await fetch("/api/precursor/reset", { method: "POST" });
+
+            // Clear UI elements
+            scoreHistory.length = 0;
+            rawHistory.length = 0;
+            document.getElementById("ruleCounter").innerText = "[0/3]";
+            updateRuleDots(0);
+            document.getElementById("leadTimeDisp").innerText = "LEAD TIME: -";
+            document.getElementById("projectedTimeNum").innerText = "-";
+            document.getElementById("rcaStreamBox").innerHTML = '<span style="color:var(--text-muted); font-style:italic;">Inference begins reasoning once score crosses 80% threshold...</span>';
+            document.getElementById("firstTokenDisp").innerText = "-";
+            document.getElementById("humanFooter").classList.remove("visible");
+            updateSignatures({ s1: false, s2: false, s3: false });
+            updateStatusPill("NOMINAL");
+
+            const timerEl = document.getElementById("escalationTimer");
+            if (timerEl) {
+                timerEl.innerText = "00:60";
+                timerEl.style.color = "#F59E0B";
+            }
+            const ackLine = document.getElementById("ackStatusLine");
+            if (ackLine) ackLine.innerText = "";
+        }
+
+        // Run Soak Test
+        async function runSoakTest() {
+            const banner = document.getElementById("soakBanner");
+            const text = document.getElementById("soakBannerText");
+            banner.style.display = "flex";
+            text.innerText = "SOAK TEST: Running 10,000 nominal windows server-side...";
+
+            try {
+                const res = await fetch("/api/soak_test?cycles=10000", { method: "POST" });
+                const data = await res.json();
+                text.innerText = `SOAK TEST: Scored ${data.windows_scored.toLocaleString()} windows | Trips: ${data.trips} | Peak: ${data.peak_score.toFixed(3)} | p99: ${data.p99_score.toFixed(3)} | 95% Bound: ${data.false_trip_rate_bound_95pct} (~3/N) | STATUS: ${data.status}`;
+            } catch (e) {
+                text.innerText = "SOAK TEST: Execution error occurred.";
+            }
+        }
+
+        // Tab Switching
+        function switchTab(tabIndex) {
+            const tabBtn = document.getElementById("tabBtn" + tabIndex);
+            if (!isPresenterMode && tabBtn.classList.contains("locked")) {
+                return;
+            }
+
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById("tabBtn" + i);
+                const view = document.getElementById("tab" + i + "Content");
+                if (btn && view) {
+                    btn.classList.remove("active");
+                    view.classList.remove("active");
+                }
+            }
+
+            tabBtn.classList.add("active");
+            document.getElementById("tab" + tabIndex + "Content").classList.add("active");
+            currentTab = tabIndex;
+
+            if (tabIndex === 1) {
+                setTimeout(resizeCanvases, 50);
+            }
+        }
+
+        // Presenter Mode (Key 'P')
+        function togglePresenterMode() {
+            isPresenterMode = !isPresenterMode;
+            const btn = document.getElementById("presenterBtn");
+            if (isPresenterMode) {
+                btn.innerText = "PRESENTER: UNLOCKED";
+                btn.style.color = "var(--color-nominal)";
+                btn.style.borderColor = "var(--color-nominal)";
+                for (let i = 1; i <= 4; i++) {
+                    document.getElementById("tabBtn" + i).classList.remove("locked");
+                }
+            } else {
+                btn.innerText = "PRESENTER: LOCKED";
+                btn.style.color = "var(--text-secondary)";
+                btn.style.borderColor = "var(--panel-border)";
+            }
+        }
+
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "p" || e.key === "P") togglePresenterMode();
+            if (e.key === "1") switchTab(1);
+            if (e.key === "2") switchTab(2);
+            if (e.key === "3") switchTab(3);
+            if (e.key === "4") switchTab(4);
+        });
+    </script>
+</body>
+</html>
+'''
+
+with open("D:/omni-inspect-ai/web/templates/dashboard.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print("Successfully generated complete 4-tab dashboard.html!")

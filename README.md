@@ -3,10 +3,15 @@
 [![Meta Global AI Developer Hackathon 2026](https://img.shields.io/badge/Meta%20AI%20Hackathon-Indie%20Track-blue)](https://cerebralvalley.ai/e/meta-ai-developer-hackathon)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 [![Meta Model API: muse-spark-1.3 / Llama 3.2 Vision](https://img.shields.io/badge/Meta%20Models-muse--spark--1.3%20%7C%20Llama%203.2-6f42c1)](https://dev.meta.ai)
+[![Inference: Baseten](https://img.shields.io/badge/Inference-Baseten-orange)](https://baseten.co)
+[![Serverless: Modal](https://img.shields.io/badge/Cloud-Modal-green)](https://modal.com)
+[![How We Built It](https://img.shields.io/badge/Architecture-How%20We%20Built%20It-blueviolet)](docs/HOW_WE_BUILT_IT.md)
 [![FastAPI: v8.0](https://img.shields.io/badge/Backend-FastAPI%20%7C%20WebSocket-009688)](https://fastapi.tiangolo.com)
 [![Standard: IPC-A-610G Class 3](https://img.shields.io/badge/Standard-IPC--A--610G%20Class%203-red)](https://www.ipc.org)
 
 > **Autonomous cyber-physical inspection platform combining Meta foundation models, deterministic CAD netlist diffing, and high-speed electrical signal ML to prevent catastrophic hardware burnouts before and during first power-on.**
+>
+> 📖 **Read the Full Deep-Dive:** [How We Built OmniInspect AI: Multi-Agent Architecture & Engineering Journey](docs/HOW_WE_BUILT_IT.md) | [Adversarial Agent Personas](docs/agents/)
 
 ---
 

@@ -39,3 +39,13 @@ checkpoints/
 *.npz
 data/raw/
 data/fault_dataset/*.npz
+
+cloudflared.exe
+
+
+patch_*.py
+install_*.py
+capture_rca_only.py
+update_readme.py
+test_baseten_twice.py
+
