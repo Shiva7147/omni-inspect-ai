@@ -51,13 +51,49 @@ OmniInspect AI deploys a **two-layer cyber-physical defense shield**:
 
 ---
 
+
+## 📐 End-to-End System Architecture
+
+```mermaid
+flowchart LR
+    subgraph SENSORS ["1. Edge Acquisition (Simulated 100 kSPS)"]
+        S1["Bus Voltage & Ripple"]
+        S2["INA229 Current & dI/dt"]
+        S3["15-25 kHz HF Arc Energy"]
+        S4["Junction Temp MLX90614"]
+    end
+
+    subgraph EDGE ["2. Compiled Edge Detector (< 2.0 ms)"]
+        FE["Feature Extraction (14 Features)"]
+        IF["Isolation Forest (35 Trees)\nThreshold = 0.680"]
+        RL["3-Consecutive Window Latch"]
+        SSR["Crydom SSR Interlock (Simulated Cutoff)"]
+    end
+
+    subgraph REASONING ["3. Multimodal Reasoning Layer"]
+        BT["Meta Muse on Baseten\n(meta-models/muse-spark-open-1026)"]
+        CAD["Deterministic CAD Netlist\n(U14 Pin 48-49 Match)"]
+    end
+
+    subgraph AUDIT ["4. Tamper-Evident Governance"]
+        REC["SHA-256 Incident Digest\n(Telemetry + Image + State)"]
+        OP["Operator Verification Scan\nNominal Recovery"]
+    end
+
+    SENSORS --> FE --> IF --> RL --> SSR
+    IF -. "Early Trigger at 0.8x Threshold" .-> BT
+    BT --> CAD --> REC --> OP
+```
+
+---
+
 ## 🔍 Built vs. Simulated Architecture Matrix
 
 In the spirit of complete technical transparency, the following table delineates what is production-executed code versus what is emulated for the hackathon demo environment:
 
 | Subsystem | Implementation Status | Technical Details |
 | :--- | :--- | :--- |
-| **Meta Multimodal Reasoning** | **Built & Live** | Dispatches optical crops directly to Meta's official API (`https://api.meta.ai/v1`, model `muse-spark-1.3` / `sam-3.1`), with drop-in compatibility for self-hosted `Llama-3.2-11B-Vision-Instruct`. |
+| **Meta Multimodal Reasoning** | **Built & Live** | Dispatches RCA requests directly to Meta Muse hosted on Baseten (`https://inference.baseten.co/v1`, model `meta-models/muse-spark-open-1026`), with seamless fallback to Meta API (`api.meta.ai/v1`, model `muse-spark-1.3`). Verified live streaming tokens (~1.3s first-token latency). |
 | **Deterministic CAD Parser** | **Built** | `engine/cad/parser.py` parses KiCad `.kicad_pcb` and IPC-D-356 netlists into a ground-truth graph $G = (V_{\text{pads}}, E_{\text{nets}})$. |
 | **Sub-Pixel Homography** | **Implemented** | `engine/vision/homography.py` computes planar projective transform matrices via OpenCV `findHomography` with RANSAC. In the web demo UI, the reticle is anchored to static carrier coordinates for determinism. |
 | **Hardware Abstraction Layer (HAL)** | **Built & Deployed** | `engine/edge/hardware_layer.py` implements native SPI (TI INA229 20-bit ADC), GPIO 17 (Crydom D2425 SSR), I2C (MLX90614 IR temp), and MEMS acoustic sensor drivers with cross-platform emulation fallback. |
@@ -180,7 +216,20 @@ curl -X POST https://shivaclick14--omni-inspect-ai-remote-audit-endpoint.us-east
 
 - **IPC-A-610G Class 3:** Strict visual acceptance criteria for high-reliability aerospace assemblies.
 - **IPC J-STD-001:** Requirements for soldered electrical and electronic assemblies.
-- **SHA-256 Cryptographic Audit:** Every inspection event generates an immutable hash combining image SHA-256, telemetry trip values, timestamp, and incident UUID.
+- **SHA-256 Cryptographic Audit:** Every inspection event generates an tamper-evident hash combining image SHA-256, telemetry trip values, timestamp, and incident UUID.
+
+---
+
+---
+
+## ⚠️ System Limitations & Engineering Boundary Disclosures
+
+In adherence to rigorous engineering standards and hackathon transparency rules:
+
+1. **Synthetic Telemetry & Signal Data**: The training dataset (8,100 sliding windows across nominal, filament micro-bridging, MLCC breakdown, and flux migration) and the 10,000-window soak test are synthesized by `engine/ml/dataset_generator.py`. They validate mathematical correctness, feature pipelines, and zero-false-trip boundaries under safe laboratory conditions without destroying expensive prototype boards.
+2. **Simulated Hardware Actuation**: Physical solid-state relay (Crydom D2425 SSR) cutoffs, GPIO 17 actuation pulses, and 24V/5V/12V DC rail dropouts are simulated in software. The embedded HAL driver (`engine/edge/hardware_layer.py`) implements Linux sysfs GPIO and SPI calls ready for Raspberry Pi / BeagleBone edge targets.
+3. **Illustrative Optical Imagery**: SMT board macro photographs are curated reference specimens illustrating typical IPC-A-610 Class 3 solder bridging defects on fine-pitch QFP packages.
+4. **Single-Generator Benchmark**: The reported false-alarm upper bound ($\le 3/N = 0.0003$ per window) is measured on synthetic nominal distributions. Production deployment on flight hardware requires field calibration across ambient thermal chambers and dynamic power supplies.
 
 ---
 

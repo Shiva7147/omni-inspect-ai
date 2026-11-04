@@ -61,7 +61,7 @@
 - **Voiceover:**
   > "The technician claims the ticket with F1, performs the rework, and hits F2 to verify restoral. Clean concave fillets, 0.24mm clearance, and nominal 24V power authorized.
   >
-  > Every inspection generates an immutable Root-Cause Analysis report complete with an Avionics Flight Recorder microsecond timeline and SHA-256 cryptographic proof ready for FAA and ISO-9001 compliance.
+  > Every inspection generates an tamper-evident Root-Cause Analysis report complete with an Avionics Flight Recorder microsecond timeline and SHA-256 cryptographic proof ready for FAA and ISO-9001 compliance.
   >
   > OmniInspect AI: pushing the frontier of cyber-physical safety. Built by Shiva Shankar S for the Meta Global AI Developer Hackathon. Thank you."
 

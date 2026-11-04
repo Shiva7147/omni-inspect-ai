@@ -20,16 +20,17 @@ class TestOmniInspectPlatform(unittest.TestCase):
         self.client = TestClient(app)
 
     def test_dashboard_homepage_v8(self):
-        """Verifies that the v8.0 dashboard HTML loads with both Layer 1 and Layer 2 components."""
+        """Verifies that the v8.0 dashboard HTML loads with the modern Cyber-Physical Safety Gate flow."""
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
         html = response.text
-        self.assertIn("OmniInspect AI", html)
-        self.assertIn("LAYER 1: OPTICAL", html)
-        self.assertIn("CAD DIGITAL TWIN", html)
-        self.assertIn("scopeCanvas2", html)
-        self.assertIn("scopeCanvas3", html)
-        self.assertIn("FAILSAFE REVIEW TIMER", html)
+        self.assertIn("OMNIINSPECT AI // PRE-POWER CYBER-PHYSICAL SAFETY GATE", html)
+        self.assertIn("PRODUCTION RUN", html)
+        self.assertIn("CONTAINMENT", html)
+        self.assertIn("scoreCanvas", html)
+        self.assertIn("Deviation from nominal baseline (z-score)", html)
+        self.assertIn("Isolation Forest (35 trees), compiled edge evaluator", html)
+        self.assertIn("synthetic data, same generator as the ramp", html)
 
     def test_printable_rca_report_generation(self):
         """Verifies that the printable RCA Incident Report generates with SHA-256 digest and epistemic receipts."""
